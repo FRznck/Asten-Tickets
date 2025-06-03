@@ -31,7 +31,7 @@ googlelogin.addEventListener("click", function() {
         const token = credential.accessToken;
         const user = result.user;
         console.log('Connexion réussie:', { user, token, credential });
-        window.location.href = "dashboard.html";
+        window.location.href = "user-dashboard.html";
     })
     .catch((error) => {
         const errorCode = error.code;

@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Simuler une connexion réussie
         localStorage.setItem('isAuthenticated', 'true');
-        window.location.href = 'dashboard.html';
+        window.location.href = 'user-dashboard.html';
     });
     
     registerBtn.addEventListener('click', function() {
@@ -204,7 +204,7 @@ function loadTickets() {
 document.addEventListener('DOMContentLoaded', function() {
     // Vérifier l'authentification
     if (window.location.pathname !== '/index.html' && !localStorage.getItem('isAuthenticated')) {
-        window.location.href = 'index.html';
+        window.location.href = 'user-dashboard.html';
     }
     
     // Charger les tickets
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function() {
             localStorage.removeItem('isAuthenticated');
-            window.location.href = 'index.html';
+            window.location.href = 'user-dashboard.html';
         });
     }
     
