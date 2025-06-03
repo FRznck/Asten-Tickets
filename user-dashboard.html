@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Utilisateur - Système de Ticketing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary-color: #f1f5f9;
+            --accent-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --success-color: #22c55e;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 12px;
+            transition: background 0.3s ease;
+        }
+
+        .user-profile:hover {
+            background: var(--secondary-color);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 2rem 0;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--secondary-color);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+
+        .category-predite, .category-modifiee {
+            background: var(--secondary-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .category-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .confidence-score {
+            background: var(--primary-color);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .full-width-card {
+            grid-column: 1 / -1;
+        }
+
+        .tickets-history {
+            margin-top: 2rem;
+        }
+
+        .ticket-item {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary-color);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .ticket-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .ticket-title {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .ticket-date {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .ticket-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-nouveau { background: #fef3c7; color: #92400e; }
+        .status-en-cours { background: #dbeafe; color: #1e40af; }
+        .status-resolu { background: #d1fae5; color: #065f46; }
+
+        .filters-section {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 10px 16px;
+            border-radius: 25px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .filter-item:hover {
+            border-color: var(--primary-color);
+            background: rgba(37, 99, 235, 0.05);
+            color: var(--primary-color);
+        }
+
+        .filter-icon {
+            width: 12px;
+            height: 12px;
+            background: var(--primary-color);
+            border-radius: 50%;
+        }
+
+        .success-message {
+            background: var(--success-color);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .prediction-placeholder {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 3rem 2rem;
+            background: var(--secondary-color);
+            border-radius: 12px;
+            border: 2px dashed var(--border-color);
+        }
+
+        .modify-placeholder {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 3rem 2rem;
+        }
+
+        .ticket-category {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--success-color);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 3000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            background: var(--danger-color);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .filters-section {
+                justify-content: center;
+            }
+
+            .ticket-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">AT</div>
+                    <span>Asten Tickets</span>
+                </div>
+                <div class="user-profile">
+                    <span>Bienvenue, Utilisateur</span>
+                    <div class="user-avatar">U</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="main-content">
+            <div class="dashboard-grid">
+                <!-- Soumission d'un Ticket -->
+                <div class="card animate-fade-in">
+                    <h2 class="card-title">Soumission d'un Ticket</h2>
+                    <div class="success-message" id="successMessage">
+                        ✅ Ticket soumis avec succès !
+                    </div>
+                    <form id="ticketForm">
+                        <div class="form-group">
+                            <label class="form-label">Titre du Ticket</label>
+                            <input type="text" class="form-input" placeholder="Décrivez brièvement votre demande" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-textarea" placeholder="Décrivez votre problème en détail..." required></textarea>
+                        </div>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-secondary" onclick="cancelTicket()">Annuler</button>
+                            <button type="submit" class="btn btn-primary">
+                                <span class="btn-text">Soumettre</span>
+                                <div class="loading" id="submitLoading" style="display: none;"></div>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Catégorie Prédite -->
+                <div class="card animate-fade-in">
+                    <h2 class="card-title">Catégorie Prédite</h2>
+                    <div id="predictedCategory" class="prediction-placeholder">
+                        Soumettez un ticket pour voir la catégorie prédite
+                    </div>
+                </div>
+            </div>
+
+            <!-- Catégorie Modifiée -->
+            <div class="card full-width-card animate-fade-in">
+                <h2 class="card-title">Modification de Catégorie</h2>
+                <div id="modifySection" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">Nouvelle Catégorie</label>
+                        <select class="form-select" id="newCategory">
+                            <option value="">Sélectionner une catégorie</option>
+                            <option value="Support Technique">Support Technique</option>
+                            <option value="Assistance Générale">Assistance Générale</option>
+                            <option value="Demande de Fonctionnalité">Demande de Fonctionnalité</option>
+                            <option value="Bug Report">Rapport de Bug</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-secondary" onclick="cancelModification()">Annuler</button>
+                        <button type="button" class="btn btn-primary" onclick="validateModification()">Valider</button>
+                    </div>
+                </div>
+                <div id="noModifyMessage" class="modify-placeholder">
+                    Aucune catégorie à modifier pour le moment
+                </div>
+            </div>
+
+            <!-- Historique des Tickets -->
+            <div class="card full-width-card animate-fade-in tickets-history">
+                <h2 class="card-title">Historique des Tickets</h2>
+                
+                <!-- Filtres -->
+                <div class="filters-section">
+                    <div class="filter-item" onclick="filterByDate()">
+                        <div class="filter-icon"></div>
+                        <span>Filtrer par Date</span>
+                    </div>
+                    <div class="filter-item" onclick="filterByStatus()">
+                        <div class="filter-icon"></div>
+                        <span>Filtrer par Statut</span>
+                    </div>
+                    <div class="filter-item" onclick="filterByCategory()">
+                        <div class="filter-icon"></div>
+                        <span>Filtrer par Catégorie</span>
+                    </div>
+                </div>
+
+                <div id="ticketsContainer">
+                    <div class="ticket-item">
+                        <div class="ticket-header">
+                            <div class="ticket-title">Titre du Ticket 1</div>
+                            <div class="ticket-status status-nouveau">Nouveau</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--text-secondary);">Problème avec l'authentification utilisateur</span>
+                            <span class="ticket-date">12/12/2023</span>
+                        </div>
+                        <div class="ticket-category">Catégorie: Support Technique</div>
+                    </div>
+
+                    <div class="ticket-item">
+                        <div class="ticket-header">
+                            <div class="ticket-title">Titre du Ticket 2</div>
+                            <div class="ticket-status status-en-cours">En cours</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--text-secondary);">Demande d'amélioration de l'interface</span>
+                            <span class="ticket-date">10/12/2023</span>
+                        </div>
+                        <div class="ticket-category">Catégorie: Demande de Fonctionnalité</div>
+                    </div>
+
+                    <div class="ticket-item">
+                        <div class="ticket-header">
+                            <div class="ticket-title">Titre du Ticket 3</div>
+                            <div class="ticket-status status-resolu">Résolu</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--text-secondary);">Correction de bug dans le formulaire de contact</span>
+                            <span class="ticket-date">08/12/2023</span>
+                        </div>
+                        <div class="ticket-category">Catégorie: Bug Report</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentTicket = null;
+        let tickets = [
+            {
+                id: 1,
+                title: "Titre du Ticket 1", 
+                description: "Problème avec l'authentification utilisateur",
+                status: "Nouveau",
+                date: "12/12/2023",
+                category: "Support Technique"
+            },
+            {
+                id: 2,
+                title: "Titre du Ticket 2", 
+                description: "Demande d'amélioration de l'interface",
+                status: "En cours",
+                date: "10/12/2023",
+                category: "Demande de Fonctionnalité"
+            },
+            {
+                id: 3,
+                title: "Titre du Ticket 3", 
+                description: "Correction de bug dans le formulaire de contact",
+                status: "Résolu",
+                date: "08/12/2023",
+                category: "Bug Report"
+            }
+        ];
+
+        // Fonction pour afficher les toasts
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }
+
+        // Soumission de ticket
+        document.getElementById('ticketForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const title = this.querySelector('input[type="text"]').value;
+            const description = this.querySelector('textarea').value;
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const loading = submitBtn.querySelector('#submitLoading');
+            
+            // Afficher le loading
+            btnText.textContent = 'Traitement...';
+            loading.style.display = 'inline-block';
+            submitBtn.disabled = true;
+            
+            // Simulation de l'analyse NLP et prédiction de catégorie
+            setTimeout(() => {
+                const categories = [
+                    { name: "Support Technique", confidence: 85 },
+                    { name: "Assistance Générale", confidence: 72 },
+                    { name: "Bug Report", confidence: 68 }
+                ];
+                
+                // Sélection aléatoire d'une catégorie avec le plus haut score
+                const predictedCategory = categories[Math.floor(Math.random() * categories.length)];
+                
+                showPredictedCategory(predictedCategory);
+                showModificationSection(predictedCategory);
+                
+                // Ajouter le ticket à l'historique
+                const newTicket = {
+                    id: tickets.length + 1,
+                    title: title,
+                    description: description,
+                    status: "Nouveau",
+                    date: new Date().toLocaleDateString('fr-FR'),
+                    category: predictedCategory.name
+                };
+                
+                tickets.unshift(newTicket);
+                updateTicketsDisplay();
+                
+                // Afficher le toast de succès
+                showToast('Ticket soumis avec succès !');
+                
+                // Réinitialiser le formulaire
+                this.reset();
+                
+                // Réinitialiser le bouton
+                btnText.textContent = 'Soumettre';
+                loading.style.display = 'none';
+                submitBtn.disabled = false;
+            }, 1500);
+        });
+
+        function showPredictedCategory(category) {
+            const container = document.getElementById('predictedCategory');
+            container.innerHTML = `
+                <div class="category-predite">
+                    <div class="category-header">
+                        <span class="category-name">${category.name}</span>
+                        <span class="confidence-score">${category.confidence}%</span>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">Catégorie suggérée par l'IA</p>
+                </div>
+            `;
+            currentTicket = category;
+        }
+
+        function showModificationSection(category) {
+            document.getElementById('modifySection').style.display = 'block';
+            document.getElementById('noModifyMessage').style.display = 'none';
+            
+            // Pré-sélectionner la catégorie prédite
+            document.getElementById('newCategory').value = category.name;
+        }
+
+        function cancelTicket() {
+            document.getElementById('ticketForm').reset();
+        }
+
+        function cancelModification() {
+            document.getElementById('modifySection').style.display = 'none';
+            document.getElementById('noModifyMessage').style.display = 'block';
+        }
+
+        function validateModification() {
+            const newCategory = document.getElementById('newCategory').value;
+            if (newCategory) {
+                // Mettre à jour la catégorie du ticket le plus récent
+                if (tickets.length > 0) {
+                    tickets[0].category = newCategory;
+                    updateTicketsDisplay();
+                }
+                
+                // Masquer la section de modification
+                cancelModification();
+                
+                // Afficher un toast de confirmation
+                showToast('Catégorie modifiée avec succès !');
+            }
+        }
+
+        function updateTicketsDisplay() {
+            const container = document.getElementById('ticketsContainer');
+            container.innerHTML = '';
+            
+            tickets.forEach(ticket => {
+                const statusClass = ticket.status.toLowerCase().replace(' ', '-');
+                const ticketElement = document.createElement('div');
+                ticketElement.className = 'ticket-item';
+                ticketElement.innerHTML = `
+                    <div class="ticket-header">
+                        <div class="ticket-title">${ticket.title}</div>
+                        <div class="ticket-status status-${statusClass}">${ticket.status}</div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-secondary);">${ticket.description}</span>
+                        <span class="ticket-date">${ticket.date}</span>
+                    </div>
+                    <div class="ticket-category">
+                        Catégorie: ${ticket.category}
+                    </div>
+                `;
+                container.appendChild(ticketElement);
+            });
+        }
+
+        // Fonctions de filtrage
+        function filterByDate() {
+            const sortedTickets = [...tickets].sort((a, b) => new Date(b.date) - new Date(a.date));
+            displayFilteredTickets(sortedTickets, 'Date (plus récent)');
+        }
+
+        function filterByStatus() {
+            const statusOrder = { 'Nouveau': 0, 'En cours': 1, 'Résolu': 2 };
+            const sortedTickets = [...tickets].sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
+            displayFilteredTickets(sortedTickets, 'Statut');
+        }
+
+        function filterByCategory() {
+            const sortedTickets = [...tickets].sort((a, b) => a.category.localeCompare(b.category));
+            displayFilteredTickets(sortedTickets, 'Catégorie');
+        }
+
+        function displayFilteredTickets(filteredTickets, filterType) {
+            tickets = filteredTickets;
+            updateTicketsDisplay();
+            
+            // Afficher un toast du filtre appliqué
+            showToast(`Filtré par: ${filterType}`);
+        }
+
+        // Initialisation de l'affichage des tickets
+        updateTicketsDisplay();
+
+        // Animation d'entrée pour les cartes
+        window.addEventListener('load', function() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        });
+    </script>
+</body>
+</html>
