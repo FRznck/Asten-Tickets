@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Enregistrer le ticket (simulation)
-        const tickets = JSON.parse(localStorage.getItem('tickets') || [];
+        const tickets = JSON.parse(localStorage.getItem('tickets') || []);
         const category = modifyCategoryCheck.checked ? 
             document.getElementById('categorySelect').value : 
             predictedCategory.textContent;
