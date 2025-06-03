@@ -1,0 +1,184 @@
+/* auth.css */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #3498db, #2c3e50);
+    padding: 20px;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 450px;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.success-card, .error-card {
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.logo-container {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.logo {
+    max-width: 150px;
+    margin-bottom: 1rem;
+}
+
+.auth-form {
+    margin-top: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border-right: none;
+}
+
+.form-control {
+    border-left: none;
+    padding-left: 0;
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: #ced4da;
+}
+
+.form-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+}
+
+.btn {
+    padding: 0.5rem 1.5rem;
+    border-radius: 5px;
+    font-weight: 500;
+}
+
+.auth-links {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+.auth-links a {
+    color: #3498db;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.auth-links a:hover {
+    text-decoration: underline;
+}
+
+.legal-links {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    font-size: 0.8rem;
+}
+
+.legal-links a {
+    color: #666;
+    text-decoration: none;
+}
+
+.legal-links a:hover {
+    color: #3498db;
+}
+
+/* Success/Error specific styles */
+.success-icon, .error-icon {
+    font-size: 5rem;
+    margin-bottom: 1.5rem;
+}
+
+.success-icon {
+    color: #2ecc71;
+}
+
+.error-icon {
+    color: #e74c3c;
+}
+
+.success-card h1, .error-card h1 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.success-card p, .error-card p {
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.ticket-details {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    text-align: left;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.detail-label {
+    font-weight: 500;
+    color: #555;
+}
+
+.detail-value {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.success-actions, .error-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+    .auth-card {
+        padding: 1.5rem;
+    }
+    
+    .success-actions, .error-actions {
+        flex-direction: column;
+    }
+    
+    .legal-links {
+        flex-wrap: wrap;
+    }
+} 

@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Système de Catégorisation Automatique - Groupe Asten</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary-color: #f1f5f9;
+            --accent-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --success-color: #22c55e;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 2px;
+            background: var(--secondary-color);
+            padding: 4px;
+            border-radius: 12px;
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            color: var(--text-secondary);
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: var(--primary-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 12px;
+            transition: background 0.3s ease;
+        }
+
+        .user-profile:hover {
+            background: var(--secondary-color);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 2rem 0;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Dashboard */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-title {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-change {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .change-positive { color: var(--success-color); }
+        .change-negative { color: var(--danger-color); }
+
+        /* Charts */
+        .chart-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .chart-filter {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Ticket Management */
+        .ticket-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-container {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 48px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--secondary-color);
+        }
+
+        /* Ticket Table */
+        .ticket-table {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: var(--secondary-color);
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tr:hover {
+            background: rgba(37, 99, 235, 0.02);
+        }
+
+        .ticket-id {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .ticket-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-nouveau { background: #fef3c7; color: #92400e; }
+        .status-en-cours { background: #dbeafe; color: #1e40af; }
+        .status-resolu { background: #d1fae5; color: #065f46; }
+        .status-ferme { background: #f3f4f6; color: #374151; }
+
+        .category-tag {
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .cat-technique { background: #e0f2fe; color: #0277bd; }
+        .cat-facturation { background: #f3e5f5; color: #7b1fa2; }
+        .cat-support { background: #e8f5e8; color: #2e7d32; }
+        .cat-autre { background: #fff3e0; color: #f57c00; }
+
+        .confidence-score {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .confidence-bar {
+            width: 60px;
+            height: 6px;
+            background: var(--border-color);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .confidence-high { background: var(--success-color); }
+        .confidence-medium { background: var(--warning-color); }
+        .confidence-low { background: var(--danger-color); }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 8px;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: var(--secondary-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* Settings */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+
+        .settings-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .settings-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .settings-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .settings-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--border-color);
+            border-radius: 24px;
+            transition: 0.3s;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        .toggle-input:checked + .toggle-slider {
+            background: var(--primary-color);
+        }
+
+        .toggle-input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-tabs {
+                order: -1;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ticket-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-container {
+                max-width: none;
+            }
+
+            .action-buttons {
+                justify-content: center;
+            }
+
+            th, td {
+                padding: 0.75rem 1rem;
+            }
+
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--success-color);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 3000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            background: var(--danger-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">AT</div>
+                    <span>Asten Tickets</span>
+                </div>
+                
+                <nav class="nav-tabs">
+                    <button class="nav-tab active" data-tab="dashboard">
+                        📊 Tableau de Bord
+                    </button>
+                    <button class="nav-tab" data-tab="tickets">
+                        🎫 Gestion Tickets
+                    </button>
+                    <button class="nav-tab" data-tab="analytics">
+                        📈 Analytiques
+                    </button>
+                    <button class="nav-tab" data-tab="settings">
+                        ⚙️ Paramètres
+                    </button>
+                </nav>
+
+                <div class="user-profile">
+                    <div class="user-avatar">AD</div>
+                    <div>
+                        <div style="font-weight: 600;">Admin</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Groupe Asten</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Tickets Traités Aujourd'hui</div>
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                📝
+                            </div>
+                        </div>
+                        <div class="stat-value">247</div>
+                        <div class="stat-change change-positive">
+                            ↗️ +12% vs hier
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Précision du Modèle</div>
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                                🎯
+                            </div>
+                        </div>
+                        <div class="stat-value">94.2%</div>
+                        <div class="stat-change change-positive">
+                            ↗️ +2.1% ce mois
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Temps Moyen de Traitement</div>
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
+                                ⏱️
+                            </div>
+                        </div>
+                        <div class="stat-value">2.3min</div>
+                        <div class="stat-change change-negative">
+                            ↘️ -18% vs semaine dernière
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Tickets en Attente</div>
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white;">
+                                ⏳
+                            </div>
+                        </div>
+                        <div class="stat-value">15</div>
+                        <div class="stat-change change-positive">
+                            ↗️ -8 depuis ce matin
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Évolution des Classifications</h3>
+                        <div class="chart-filter">
+                            <button class="filter-btn active">7 jours</button>
+                            <button class="filter-btn">30 jours</button>
+                            <button class="filter-btn">3 mois</button>
+                        </div>
+                    </div>
+                    <canvas id="classificationsChart" width="400" height="200"></canvas>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Répartition par Catégorie</h3>
+                        </div>
+                        <canvas id="categoriesChart" width="400" height="400"></canvas>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Niveau de Confiance</h3>
+                        </div>
+                        <canvas id="confidenceChart" width="400" height="400"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tickets Tab -->
+            <div id="tickets" class="tab-content">
+                <div class="ticket-controls">
+                    <div class="search-container">
+                        <input type="text" class="search-input" placeholder="Rechercher un ticket..." id="searchInput">
+                        <span class="search-icon">🔍</span>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary" id="bulkClassifyBtn">
+                            🤖 Classification en Lot
+                        </button>
+                        <button class="btn btn-primary" id="newTicketBtn">
+                            ➕ Nouveau Ticket
+                        </button>
+                    </div>
+                </div>
+
+                <div class="ticket-table">
+                    <div class="table-header">
+                        <h3 class="table-title">Liste des Tickets</h3>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID Ticket</th>
+                                    <th>Titre</th>
+                                    <th>Statut</th>
+                                    <th>Catégorie</th>
+                                    <th>Confiance</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ticketsTableBody">
+                                <!-- Tickets will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Tab -->
+            <div id="analytics" class="tab-content">
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Tickets ce Mois</div>
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333;">
+                                📊
+                            </div>
+                        </div>
+                        <div class="stat-value">1,247</div>
+                        <div class="stat-change change-positive">
+                            ↗️ +8.3% vs mois dernier
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Taux de Validation</div>
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: #333;">
+                                ✅
+                            </div>
+                        </div>
+                        <div class="stat-value">91.7%</div>
+                        <div class="stat-change change-positive">
+                            ↗️ +1.2% ce mois
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Performance Mensuelle du Modèle</h3>
+                    </div>
+                    <canvas id="performanceChart" width="400" height="200"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Analyse des Erreurs de Classification</h3>
+                    </div>
+                    <canvas id="errorsChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content">
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <div class="settings-header">
+                            <h3 class="settings-title">Classification Automatique</h3>
+                            <p class="settings-description">Activer la classification automatique des nouveaux tickets</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="toggle-input" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-card">
+                        <div class="settings-header">
+                            <h3 class="settings-title">Réentraînement du Modèle</h3>
+                            <p class="settings-description">Fréquence de réentraînement automatique</p>
+                        </div>
+                        <select class="form-select">
+                            <option value="daily">Quotidien</option>
+                            <option value="weekly" selected>Hebdomadaire</option>
+                            <option value="monthly">Mensuel</option>
+                            <option value="manual">Manuel uniquement</option>
+                        </select>
+                    </div>
+
+                    <div class="settings-card">
+                        <div class="settings-header">
+                            <h3 class="settings-title">Catégories Personnalisées</h3>
+                            <p class="settings-description">Gérer les catégories de classification</p>
+                        </div>
+                        <button class="btn btn-primary" id="manageCategoriesBtn">
+                            📝 Gérer les Catégories
+                        </button>
+                    </div>
+
+                    <div class="settings-card">
+                        <div class="settings-header">
+                            <h3 class="settings-title">Export des Données</h3>
+                            <p class="settings-description">Exporter les données d'analyse</p>
+                        </div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="btn btn-secondary">📊 CSV</button>
+                            <button class="btn btn-secondary">📈 Excel</button>
+                            <button class="btn btn-secondary">📋 PDF</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for New Ticket -->
+    <div id="ticketModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Nouveau Ticket</h2>
+                <button class="close-btn" id="closeModal">×</button>
+            </div>
+            <form id="ticketForm">
+                <div class="form-group">
+                    <label class="form-label">Titre du Ticket</label>
+                    <input type="text" class="form-input" id="ticketTitle" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" id="ticketDescription" required placeholder="Décrivez le problème ou la demande..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Priorité</label>
+                    <select class="form-select" id="ticketPriority">
+                        <option value="low">Basse</option>
+                        <option value="medium" selected>Moyenne</option>
+                        <option value="high">Haute</option>
+                        <option value="urgent">Urgente</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email du Demandeur</label>
+                    <input type="email" class="form-input" id="ticketEmail">
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" id="cancelTicket">Annuler</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span id="submitText">🤖 Créer et Classifier</span>
+                        <span id="submitLoading" class="loading" style="display: none;"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // Application State
+        let currentTab = 'dashboard';
+        let tickets = [
+            {
+                id: 'TK-2024-001',
+                title: 'Problème de connexion VPN',
+                status: 'nouveau',
+                category: 'technique',
+                confidence: 92,
+                date: '2024-06-03',
+                description: 'Impossible de se connecter au VPN entreprise depuis ce matin',
+                email: 'user1@company.com',
+                priority: 'high'
+            },
+            {
+                id: 'TK-2024-002',
+                title: 'Demande de remboursement',
+                status: 'en-cours',
+                category: 'facturation',
+                confidence: 87,
+                date: '2024-06-02',
+                description: 'Demande de remboursement pour service non utilisé',
+                email: 'user2@company.com',
+                priority: 'medium'
+            },
+            {
+                id: 'TK-2024-003',
+                title: 'Formation sur nouveau logiciel',
+                status: 'resolu',
+                category: 'support',
+                confidence: 95,
+                date: '2024-06-01',
+                description: 'Besoin de formation sur le nouveau CRM',
+                email: 'user3@company.com',
+                priority: 'low'
+            },
+            {
+                id: 'TK-2024-004',
+                title: 'Erreur application mobile',
+                status: 'nouveau',
+                category: 'technique',
+                confidence: 89,
+                date: '2024-06-03',
+                description: 'L\'application mobile crash au démarrage',
+                email: 'user4@company.com',
+                priority: 'high'
+            },
+            {
+                id: 'TK-2024-005',
+                title: 'Question sur facturation',
+                status: 'ferme',
+                category: 'facturation',
+                confidence: 94,
+                date: '2024-05-30',
+                description: 'Clarification nécessaire sur dernière facture',
+                email: 'user5@company.com',
+                priority: 'medium'
+            }
+        ];
+
+        // DOM Elements
+        const navTabs = document.querySelectorAll('.nav-tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const ticketModal = document.getElementById('ticketModal');
+        const newTicketBtn = document.getElementById('newTicketBtn');
+        const closeModal = document.getElementById('closeModal');
+        const cancelTicket = document.getElementById('cancelTicket');
+        const ticketForm = document.getElementById('ticketForm');
+        const searchInput = document.getElementById('searchInput');
+        const toast = document.getElementById('toast');
+        const confidenceThreshold = document.getElementById('confidenceThreshold');
+        const confidenceValue = document.getElementById('confidenceValue');
+
+        // Tab Navigation
+        navTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.dataset.tab;
+                switchTab(tabId);
+            });
+        });
+
+        function switchTab(tabId) {
+            // Update active tab
+            navTabs.forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+
+            // Update active content
+            tabContents.forEach(content => content.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+
+            currentTab = tabId;
+
+            // Initialize tab-specific content
+            if (tabId === 'dashboard') {
+                initializeCharts();
+            } else if (tabId === 'tickets') {
+                renderTicketsTable();
+            } else if (tabId === 'analytics') {
+                initializeAnalyticsCharts();
+            }
+        }
+
+        // Modal Management
+        newTicketBtn.addEventListener('click', () => {
+            ticketModal.classList.add('active');
+        });
+
+        closeModal.addEventListener('click', closeTicketModal);
+        cancelTicket.addEventListener('click', closeTicketModal);
+
+        ticketModal.addEventListener('click', (e) => {
+            if (e.target === ticketModal) {
+                closeTicketModal();
+            }
+        });
+
+        function closeTicketModal() {
+            ticketModal.classList.remove('active');
+            ticketForm.reset();
+        }
+
+        // Ticket Form Submission
+        ticketForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const submitText = document.getElementById('submitText');
+            const submitLoading = document.getElementById('submitLoading');
+            
+            // Show loading state
+            submitText.style.display = 'none';
+            submitLoading.style.display = 'inline-block';
+            submitBtn.disabled = true;
+
+            // Simulate API call for ticket creation and classification
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Create new ticket
+            const newTicket = {
+                id: `TK-2024-${String(tickets.length + 1).padStart(3, '0')}`,
+                title: document.getElementById('ticketTitle').value,
+                status: 'nouveau',
+                category: classifyTicket(document.getElementById('ticketDescription').value),
+                confidence: Math.floor(Math.random() * 20) + 80,
+                date: new Date().toISOString().split('T')[0],
+                description: document.getElementById('ticketDescription').value,
+                email: document.getElementById('ticketEmail').value,
+                priority: document.getElementById('ticketPriority').value
+            };
+
+            tickets.unshift(newTicket);
+            
+            // Reset form and close modal
+            closeTicketModal();
+            
+            // Show success toast
+            showToast('Ticket créé et classifié avec succès!', 'success');
+            
+            // Update table if on tickets tab
+            if (currentTab === 'tickets') {
+                renderTicketsTable();
+            }
+
+            // Reset button state
+            submitText.style.display = 'inline';
+            submitLoading.style.display = 'none';
+            submitBtn.disabled = false;
+        });
+
+        // Simple ticket classification simulation
+        function classifyTicket(description) {
+            const keywords = {
+                technique: ['vpn', 'connexion', 'application', 'bug', 'erreur', 'crash', 'système'],
+                facturation: ['facture', 'remboursement', 'paiement', 'prix', 'coût', 'billing'],
+                support: ['formation', 'aide', 'question', 'comment', 'tutorial', 'guide'],
+                autre: []
+            };
+
+            const descLower = description.toLowerCase();
+            
+            for (const [category, words] of Object.entries(keywords)) {
+                if (words.some(word => descLower.includes(word))) {
+                    return category;
+                }
+            }
+            return 'autre';
+        }
+
+        // Search functionality
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            renderTicketsTable(searchTerm);
+        });
+
+        // Render tickets table
+        function renderTicketsTable(searchTerm = '') {
+            const tbody = document.getElementById('ticketsTableBody');
+            const filteredTickets = searchTerm 
+                ? tickets.filter(ticket => 
+                    ticket.title.toLowerCase().includes(searchTerm) ||
+                    ticket.id.toLowerCase().includes(searchTerm) ||
+                    ticket.category.toLowerCase().includes(searchTerm)
+                  )
+                : tickets;
+
+            tbody.innerHTML = filteredTickets.map(ticket => `
+                <tr>
+                    <td class="ticket-id">${ticket.id}</td>
+                    <td>${ticket.title}</td>
+                    <td><span class="ticket-status status-${ticket.status}">${getStatusLabel(ticket.status)}</span></td>
+                    <td><span class="category-tag cat-${ticket.category}">${getCategoryLabel(ticket.category)}</span></td>
+                    <td>
+                        <div class="confidence-score">
+                            <span>${ticket.confidence}%</span>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill confidence-${getConfidenceLevel(ticket.confidence)}" 
+                                     style="width: ${ticket.confidence}%"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${formatDate(ticket.date)}</td>
+                    <td>
+                        <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;" 
+                                onclick="viewTicket('${ticket.id}')">
+                            👁️ Voir
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Helper functions
+        function getStatusLabel(status) {
+            const labels = {
+                'nouveau': 'Nouveau',
+                'en-cours': 'En Cours',
+                'resolu': 'Résolu',
+                'ferme': 'Fermé'
+            };
+            return labels[status] || status;
+        }
+
+        function getCategoryLabel(category) {
+            const labels = {
+                'technique': 'Technique',
+                'facturation': 'Facturation',
+                'support': 'Support',
+                'autre': 'Autre'
+            };
+            return labels[category] || category;
+        }
+
+        function getConfidenceLevel(confidence) {
+            if (confidence >= 90) return 'high';
+            if (confidence >= 70) return 'medium';
+            return 'low';
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR');
+        }
+
+        function viewTicket(ticketId) {
+            const ticket = tickets.find(t => t.id === ticketId);
+            if (ticket) {
+                alert(`Détails du ticket ${ticket.id}:\n\nTitre: ${ticket.title}\nDescription: ${ticket.description}\nStatut: ${getStatusLabel(ticket.status)}\nCatégorie: ${getCategoryLabel(ticket.category)} (${ticket.confidence}% confiance)`);
+            }
+        }
+
+        // Toast notifications
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Settings - Confidence threshold slider
+        confidenceThreshold.addEventListener('input', (e) => {
+            confidenceValue.textContent = e.target.value + '%';
+        });
+
+        // Bulk classify functionality
+        document.getElementById('bulkClassifyBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('bulkClassifyBtn');
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = '🤖 Classification en cours... <span class="loading"></span>';
+            btn.disabled = true;
+
+            // Simulate bulk classification
+            await new Promise(resolve => setTimeout(resolve, 3000));
+
+            // Update some tickets
+            const unclassifiedTickets = tickets.filter(t => t.confidence < 70);
+            unclassifiedTickets.forEach(ticket => {
+                ticket.confidence = Math.floor(Math.random() * 25) + 75;
+            });
+
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            
+            showToast(`${unclassifiedTickets.length} tickets reclassifiés avec succès!`, 'success');
+            
+            if (currentTab === 'tickets') {
+                renderTicketsTable();
+            }
+        });
+
+        // Chart initialization
+        function initializeCharts() {
+            // Classifications evolution chart
+            const ctx1 = document.getElementById('classificationsChart');
+            if (ctx1) {
+                new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+                        datasets: [{
+                            label: 'Tickets Classifiés',
+                            data: [45, 52, 38, 67, 73, 42, 35],
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+            }
+
+            // Categories distribution
+            const ctx2 = document.getElementById('categoriesChart');
+            if (ctx2) {
+                new Chart(ctx2, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Technique', 'Facturation', 'Support', 'Autre'],
+                        datasets: [{
+                            data: [45, 25, 20, 10],
+                            backgroundColor: [
+                                '#0277bd',
+                                '#7b1fa2',
+                                '#2e7d32',
+                                '#f57c00'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Confidence levels
+            const ctx3 = document.getElementById('confidenceChart');
+            if (ctx3) {
+                new Chart(ctx3, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Haute (90%+)', 'Moyenne (70-89%)', 'Faible (<70%)'],
+                        datasets: [{
+                            data: [60, 30, 10],
+                            backgroundColor: [
+                                '#22c55e',
+                                '#f59e0b',
+                                '#ef4444'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function initializeAnalyticsCharts() {
+            // Performance chart
+            const ctx4 = document.getElementById('performanceChart');
+            if (ctx4) {
+                new Chart(ctx4, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
+                        datasets: [{
+                            label: 'Précision (%)',
+                            data: [88, 91, 93, 92, 94, 95],
+                            backgroundColor: 'rgba(37, 99, 235, 0.8)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Errors analysis
+            const ctx5 = document.getElementById('errorsChart');
+            if (ctx5) {
+                new Chart(ctx5, {
+                    type: 'line',
+                    data: {
+                        labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+                        datasets: [{
+                            label: 'Erreurs de Classification',
+                            data: [12, 8, 6, 4],
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Initialize application
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTicketsTable();
+            initializeCharts();
+        });
+
+        // Category management
+        document.getElementById('manageCategoriesBtn').addEventListener('click', () => {
+            alert('Fonctionnalité de gestion des catégories à implémenter avec votre backend.');
+        });
+
+        // Export functionality
+        document.querySelectorAll('.settings-card button').forEach(btn => {
+            if (btn.textContent.includes('CSV') || btn.textContent.includes('Excel') || btn.textContent.includes('PDF')) {
+                btn.addEventListener('click', (e) => {
+                    const format = e.target.textContent.includes('CSV') ? 'CSV' : 
+                                  e.target.textContent.includes('Excel') ? 'Excel' : 'PDF';
+                    showToast(`Export ${format} en cours...`, 'success');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+                        

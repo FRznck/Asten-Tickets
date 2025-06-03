@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Asten Ticket Manager</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-ticket-alt"></i>
+                </div>
+                <div class="brand-text">Asten Tickets</div>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="dashboard.html" class="nav-item active">
+                    <i class="fas fa-home"></i>
+                    <span>Tableau de bord</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showNewTicketModal()">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Nouveau ticket</span>
+                </a>
+                <a href="history.html" class="nav-item">
+                    <i class="fas fa-history"></i>
+                    <span>Historique</span>
+                </a>
+                <a href="performance.html" class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Performance</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Paramètres</span>
+                </a>
+            </nav>
+
+            <div class="user-profile">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <div class="user-info">
+                    <h4 id="userName">Utilisateur</h4>
+                    <p id="userRole">Administrateur</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <h1>Tableau de bord</h1>
+                        <p id="currentDate">Aujourd'hui</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-outline">
+                        <i class="fas fa-download"></i>
+                        Exporter
+                    </button>
+                    <button class="btn btn-primary" onclick="showNewTicketModal()">
+                        <i class="fas fa-plus"></i>
+                        Nouveau ticket
+                    </button>
+                </div>
+            </header>
+
+            <div class="content">
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card fade-in">
+                        <div class="stat-header">
+                            <div class="stat-icon primary">
+                                <i class="fas fa-ticket-alt"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="totalTickets">247</div>
+                        <div class="stat-label">Total des tickets</div>
+                        <div class="stat-trend trend-up">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+12% ce mois</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card fade-in">
+                        <div class="stat-header">
+                            <div class="stat-icon success">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="resolvedTickets">189</div>
+                        <div class="stat-label">Tickets résolus</div>
+                        <div class="stat-trend trend-up">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+8% ce mois</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card fade-in">
+                        <div class="stat-header">
+                            <div class="stat-icon warning">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="pendingTickets">34</div>
+                        <div class="stat-label">En attente</div>
+                        <div class="stat-trend trend-down">
+                            <i class="fas fa-arrow-down"></i>
+                            <span>-5% ce mois</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card fade-in">
+                        <div class="stat-header">
+                            <div class="stat-icon danger">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="urgentTickets">12</div>
+                        <div class="stat-label">Urgent</div>
+                        <div class="stat-trend trend-up">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+3 aujourd'hui</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="charts-section">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Évolution des tickets</h3>
+                            <div class="chart-filter">
+                                <button class="filter-btn active" onclick="updateChart('week')">7j</button>
+                                <button class="filter-btn" onclick="updateChart('month')">30j</button>
+                                <button class="filter-btn" onclick="updateChart('year')">1an</button>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="ticketsChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Répartition par catégorie</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="categoriesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Tickets -->
+                <div class="recent-tickets">
+                    <div class="tickets-header">
+                        <h3 class="tickets-title">Tickets récents</h3>
+                        <a href="history.html" class="view-all-link">Voir tout</a>
+                    </div>
+                    <div class="tickets-list" id="recentTicketsList">
+                        <!-- Les tickets seront chargés dynamiquement -->
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <a href="#" class="action-card" onclick="showNewTicketModal()">
+                        <div class="action-icon primary">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <h4 class="action-title">Créer un ticket</h4>
+                        <p class="action-description">Soumettre une nouvelle demande</p>
+                    </a>
+
+                    <a href="history.html" class="action-card">
+                        <div class="action-icon success">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h4 class="action-title">Rechercher</h4>
+                        <p class="action-description">Trouver un ticket spécifique</p>
+                    </a>
+
+                    <a href="performance.html" class="action-card">
+                        <div class="action-icon warning">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h4 class="action-title">Rapports</h4>
+                        <p class="action-description">Analyser les performances</p>
+                    </a>
+
+                    <a href="#" class="action-card">
+                        <div class="action-icon danger">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <h4 class="action-title">Exporter</h4>
+                        <p class="action-description">Télécharger les données</p>
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Nouveau Ticket -->
+    <div id="newTicketModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 3000; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 2rem; border-radius: 15px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="color: var(--dark-gray); margin: 0;">Nouveau ticket</h2>
+                <button onclick="closeNewTicketModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--secondary-color);">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="newTicketForm">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Sujet *</label>
+                    <input type="text" id="ticketSubject" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--medium-gray); border-radius: 8px;">
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Description *</label>
+                    <textarea id="ticketDescription" required rows="4" style="width: 100%; padding: 0.75rem; border: 1px solid var(--medium-gray); border-radius: 8px; resize: vertical;"></textarea>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Priorité</label>
+                    <select id="ticketPriority" style="width: 100%; padding: 0.75rem; border: 1px solid var(--medium-gray); border-radius: 8px;">
+                        <option value="low">Faible</option>
+                        <option value="medium" selected>Moyenne</option>
+                        <option value="high">Élevée</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" onclick="closeNewTicketModal()" style="padding: 0.75rem 1.5rem; border: 1px solid var(--medium-gray); background: transparent; border-radius: 8px; cursor: pointer;">
+                        Annuler
+                    </button>
+                    <button type="submit" style="padding: 0.75rem 1.5rem; background: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer;">
+                        Créer le ticket
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Données simulées
+        const mockTickets = [
+            {
+                id: 'TK-2024-001',
+                subject: 'Problème de connexion à l\'application',
+                description: 'Impossible de se connecter depuis ce matin',
+                category: 'technique',
+                priority: 'high',
+                status: 'open',
+                created: new Date(2024, 5, 3, 9, 30),
+                author: 'Jean Dupont'
+            },
+            {
+                id: 'TK-2024-002',
+                subject: 'Demande de formation sur le nouveau module',
+                description: 'Besoin d\'une formation pour l\'équipe commerciale',
+                category: 'support',
+                priority: 'medium',
+                status: 'pending',
+                created: new Date(2024, 5, 3, 8, 15),
+                author: 'Marie Martin'
+            },
+            {
+                id: 'TK-2024-003',
+                subject: 'Erreur lors de la génération des rapports',
+                description: 'Les rapports mensuels ne se génèrent plus correctement',
+                category: 'technique',
+                priority: 'high',
+                status: 'resolved',
+                created: new Date(2024, 5, 2, 16, 45),
+                author: 'Pierre Bernard'
+            },
+            {
+                id: 'TK-2024-004',
+                subject: 'Demande de congés exceptionnels',
+                description: 'Demande de congés pour événement familial',
+                category: 'rh',
+                priority: 'low',
+                status: 'open',
+                created: new Date(2024, 5, 2, 14, 20),
+                author: 'Sophie Laurent'
+            },
+            {
+                id: 'TK-2024-005',
+                subject: 'Négociation contrat client important',
+                description: 'Besoin d\'assistance pour finaliser le contrat avec ACME Corp',
+                category: 'commercial',
+                priority: 'medium',
+                status: 'pending',
+                created: new Date(2024, 5, 1, 11, 30),
+                author: 'Thomas Dubois'
+            }
+        ];
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeUserInfo();
+            updateDateTime();
+            loadRecentTickets();
+            initializeCharts();
+            animateCards();
+        });
+
+        function initializeUserInfo() {
+            const user = window.currentUser || {
+                name: 'Administrateur',
+                email: 'admin@asten.com',
+                role: 'admin'
+            };
+            
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('userRole').textContent = user.role === 'admin' ? 'Administrateur' : 'Utilisateur';
+            document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('fr-FR', options);
+        }
+
+        function loadRecentTickets() {
+            const container = document.getElementById('recentTicketsList');
+            const recentTickets = mockTickets.slice(0, 5);
+            
+            container.innerHTML = recentTickets.map(ticket => `
+                <div class="ticket-item" onclick="viewTicket('${ticket.id}')">
+                    <div class="ticket-header">
+                        <span class="ticket-id">${ticket.id}</span>
+                        <span class="ticket-time">${formatTime(ticket.created)}</span>
+                    </div>
+                    <div class="ticket-subject">${ticket.subject}</div>
+                    <div class="ticket-meta">
+                        <div class="ticket-category category-${ticket.category}">
+                            ${getCategoryLabel(ticket.category)}
+                        </div>
+                        <div class="ticket-priority">
+                            <div class="priority-dot priority-${ticket.priority}"></div>
+                            <span>${getPriorityLabel(ticket.priority)}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function formatTime(date) {
+            const now = new Date();
+            const diff = now - date;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            
+            if (hours < 1) return 'À l\'instant';
+            if (hours < 24) return `Il y a ${hours}h`;
+            
+            const days = Math.floor(hours / 24);
+            return `Il y a ${days}j`;
+        }
+
+        function getCategoryLabel(category) {
+            const labels = {
+                'technique': 'Technique',
+                'commercial': 'Commercial',
+                'support': 'Support',
+                'rh': 'RH'
+            };
+            return labels[category] || category;
+        }
+
+        function getPriorityLabel(priority) {
+            const labels = {
+                'low': 'Faible',
+                'medium': 'Moyenne',
+                'high': 'Élevée'
+            };
+            return labels[priority] || priority;
+        }
+
+        function initializeCharts() {
+            // Graphique d'évolution des tickets
+            const ctx1 = document.getElementById('ticketsChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+                    datasets: [{
+                        label: 'Nouveaux tickets',
+                        data: [12, 19, 8, 15, 10, 7, 14],
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Tickets résolus',
+                        data: [8, 15, 12, 18, 13, 9, 11],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Graphique de répartition par catégorie
+            const ctx2 = document.getElementById('categoriesChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Technique', 'Support', 'Commercial', 'RH'],
+                    datasets: [{
+                        data: [45, 25, 20, 10],
+                        backgroundColor: [
+                            '#2563eb',
+                            '#10b981',
+                            '#f59e0b',
+                            '#ef4444'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateChart(period) {
+            // Mettre à jour les boutons de filtre
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Ici, vous pourriez mettre à jour les données du graphique
+            // selon la période sélectionnée
+        }
+
+        function animateCards() {
+            const cards = document.querySelectorAll('.stat-card, .chart-card, .action-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        }
+
+        function showNewTicketModal() {
+            document.getElementById('newTicketModal').style.display = 'flex';
+        }
+
+        function closeNewTicketModal() {
+            document.getElementById('newTicketModal').style.display = 'none';
+            document.getElementById('newTicketForm').reset();
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function viewTicket(ticketId) {
+            // Rediriger vers la page de détail du ticket
+            console.log('Voir ticket:', ticketId);
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check' : 'exclamation'}-circle"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Gestion du formulaire de nouveau ticket
+        document.getElementById('newTicketForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const subject = document.getElementById('ticketSubject').value;
+            const description = document.getElementById('ticketDescription').value;
+            const priority = document.getElementById('ticketPriority').value;
+            
+            // Simulation de catégorisation automatique
+            const categories = ['technique', 'support', 'commercial', 'rh'];
+            const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+            
+            const newTicket = {
+                id: `TK-2024-${String(mockTickets.length + 1).padStart(3, '0')}`,
+                subject: subject,
+                description: description,
+                category: randomCategory,
+                priority: priority,
+                status: 'open',
+                created: new Date(),
+                author: document.getElementById('userName').textContent
+            };
+            
+            // Ajouter le ticket à la liste
+            mockTickets.unshift(newTicket);
+            
+            // Mettre à jour l'affichage
+            loadRecentTickets();
+            
+            // Fermer le modal
+            closeNewTicketModal();
+            
+            // Afficher une notification de succès
+            showNotification('Ticket créé avec succès! Catégorie détectée: ' + getCategoryLabel(randomCategory));
+            
+            // Rediriger vers la page de succès
+            setTimeout(() => {
+                window.location.href = `ticket-success.html?id=${newTicket.id}`;
+            }, 2000);
+        });
+
+        // Vérification de l'authentification
+        if (!window.currentUser) {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
