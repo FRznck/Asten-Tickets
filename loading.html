@@ -500,15 +500,15 @@
         }
 
         @keyframes successPulse {
-            0% { 
+            0% {
                 transform: scale(0);
                 opacity: 0;
             }
-            50% { 
+            50% {
                 transform: scale(1.2);
                 opacity: 1;
             }
-            100% { 
+            100% {
                 transform: scale(1);
                 opacity: 1;
             }
@@ -673,7 +673,12 @@
     </style>
 </head>
 <body>
-    <div class="loading-container" id="loadingScreen">
+    <script>
+        setTimeout(function() {
+            window.location.href = 'auth.html';
+        }, 3000);
+    </script>
+    <div class="loading-container">
         <!-- Grille de fond IA -->
         <div class="ai-grid"></div>
 
