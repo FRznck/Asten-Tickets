@@ -5,13 +5,13 @@ import {
     signInWithEmailLink
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 
-// Paramètres pour le lien
+
 const actionCodeSettings = {
     url: 'http://127.0.0.1:5501/user-dashboard.html',
     handleCodeInApp: true
 };
 
-// Envoi du lien
+
 const emailLinkBtn = document.getElementById("email-link-btn");
 
 if (emailLinkBtn) {
