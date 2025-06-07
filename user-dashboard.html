@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Utilisateur - Système de Ticketing</title>
     <link rel="stylesheet" href="/css/user.css">
 </head>
+
 <body>
     <header class="header">
         <div class="container">
@@ -14,10 +16,14 @@
                     <div class="logo-icon">AT</div>
                     <span>Asten Tickets</span>
                 </div>
-                <div class="user-profile">
+                <div class="user-profile" style="display: flex; align-items: center; gap: 16px;">
                     <span>Bienvenue, Utilisateur</span>
                     <div class="user-avatar">U</div>
                 </div>
+
+
+                <button id="logout-btn" class="btn btn-logout">Déconnexion</button>
+
             </div>
         </div>
     </header>
@@ -34,11 +40,13 @@
                     <form id="ticketForm">
                         <div class="form-group">
                             <label class="form-label">Titre du Ticket</label>
-                            <input type="text" class="form-input" placeholder="Décrivez brièvement votre demande" required>
+                            <input type="text" class="form-input" placeholder="Décrivez brièvement votre demande"
+                                required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Description</label>
-                            <textarea class="form-textarea" placeholder="Décrivez votre problème en détail..." required></textarea>
+                            <textarea class="form-textarea" placeholder="Décrivez votre problème en détail..."
+                                required></textarea>
                         </div>
                         <div class="btn-group">
                             <button type="button" class="btn btn-secondary" onclick="cancelTicket()">Annuler</button>
@@ -87,7 +95,7 @@
             <!-- Historique des Tickets -->
             <div class="card full-width-card animate-fade-in tickets-history">
                 <h2 class="card-title">Historique des Tickets</h2>
-                
+
                 <!-- Filtres -->
                 <div class="filters-section">
                     <div class="filter-item" onclick="filterByDate()">
@@ -111,7 +119,8 @@
                             <div class="ticket-status status-nouveau">Nouveau</div>
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: var(--text-secondary);">Problème avec l'authentification utilisateur</span>
+                            <span style="color: var(--text-secondary);">Problème avec l'authentification
+                                utilisateur</span>
                             <span class="ticket-date">12/12/2023</span>
                         </div>
                         <div class="ticket-category">Catégorie: Support Technique</div>
@@ -135,7 +144,8 @@
                             <div class="ticket-status status-resolu">Résolu</div>
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: var(--text-secondary);">Correction de bug dans le formulaire de contact</span>
+                            <span style="color: var(--text-secondary);">Correction de bug dans le formulaire de
+                                contact</span>
                             <span class="ticket-date">08/12/2023</span>
                         </div>
                         <div class="ticket-category">Catégorie: Bug Report</div>
@@ -146,5 +156,8 @@
     </div>
 
     <script src="js/user.js"></script>
+    <script type="module" src="js/auth-session.js"></script>
+
 </body>
+
 </html>
