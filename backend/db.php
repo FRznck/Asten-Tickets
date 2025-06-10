@@ -1,13 +1,14 @@
 <?php
 $host = 'localhost';
-$dbname = 'systeme_tickets';
+$dbname = 'syteme_ticket';
 $user = 'root';
 $pass = '';
 
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $user, $pass);
+    $pdo = new PDO('mysql:host=localhost;dbname=systeme_ticket;charset=utf8', 'utilisateur', 'motdepasse');
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    die("Connexion échouée : " . $e->getMessage());
+    die(json_encode(['error' => 'Connexion échouée : ' . $e->getMessage()]));
 }
 ?>
+
