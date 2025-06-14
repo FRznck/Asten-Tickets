@@ -1,11 +1,14 @@
 import { db, auth } from './firebase-init.js';
-import { collection, addDoc, getDocs, query, where, Timestamp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+import {
+    collection, addDoc, getDocs, query, where, Timestamp,
+    updateDoc, doc
+} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
 
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 
 let currentTicket = null;
 let tickets = [];
 
-// Soumission de ticket
 document.getElementById('ticketForm').addEventListener('submit', async function (e) {
     e.preventDefault();
 
@@ -19,7 +22,6 @@ document.getElementById('ticketForm').addEventListener('submit', async function 
     loading.style.display = 'inline-block';
     submitBtn.disabled = true;
 
-    // Simulation NLP
     setTimeout(async () => {
         const categories = [
             { name: "Support Technique", confidence: 85 },
@@ -45,7 +47,7 @@ document.getElementById('ticketForm').addEventListener('submit', async function 
                 statut: "Nouveau",
                 dateSoumission: Timestamp.now(),
                 categorie: predictedCategory.name,
-                utilisateur: user.email
+                utilisateur: user.uid
             });
 
             showToast('Ticket soumis avec succès !');
@@ -54,7 +56,7 @@ document.getElementById('ticketForm').addEventListener('submit', async function 
             loading.style.display = 'none';
             submitBtn.disabled = false;
 
-            await chargerTickets(); // Rafraîchir l'affichage
+            await chargerTickets();
         } catch (err) {
             console.error("Erreur Firestore :", err);
             alert("Échec de l'enregistrement du ticket.");
@@ -91,13 +93,26 @@ function cancelModification() {
     document.getElementById('noModifyMessage').style.display = 'block';
 }
 
-function validateModification() {
+async function validateModification() {
     const newCategory = document.getElementById('newCategory').value;
-    if (newCategory && tickets.length > 0) {
-        tickets[0].category = newCategory;
+
+    if (!newCategory || tickets.length === 0) return;
+
+    const ticketToUpdate = tickets[0]; // On modifie le plus récent dans ce contexte
+    ticketToUpdate.category = newCategory;
+
+    try {
+        const ticketRef = doc(db, "tickets", ticketToUpdate.id);
+        await updateDoc(ticketRef, {
+            categorie: newCategory
+        });
+
         updateTicketsDisplay();
         cancelModification();
-        showToast('Catégorie modifiée avec succès !');
+        showToast('Catégorie modifiée et enregistrée avec succès !');
+    } catch (error) {
+        console.error("Erreur de mise à jour :", error);
+        alert("Erreur lors de la mise à jour du ticket.");
     }
 }
 
@@ -128,7 +143,7 @@ async function chargerTickets() {
     const user = auth.currentUser;
     if (!user) return;
 
-    const q = query(collection(db, "tickets"), where("utilisateur", "==", user.email));
+    const q = query(collection(db, "tickets"), where("utilisateur", "==", user.uid));
     const snapshot = await getDocs(q);
     tickets = [];
 
@@ -160,17 +175,42 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
-window.addEventListener("load", async () => {
-    await chargerTickets();
+window.addEventListener("load", () => {
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            await chargerTickets();
 
-    const cards = document.querySelectorAll('.card');
-    cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        setTimeout(() => {
-            card.style.transition = 'all 0.5s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, index * 200);
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+
+            //  si aucun ticket trouvé
+            if (tickets.length === 0) {
+                const container = document.getElementById('ticketsContainer');
+                container.innerHTML = `
+                    <div class="ticket-empty">
+                        🎫 vous avez aucun ticket pour le moment.
+                    </div>
+                `;
+            }
+
+        } else {
+            console.warn("Utilisateur non connecté");
+           
+            window.location.href = "auth.html";
+        }
     });
 });
+
+
+// On expose les fonctions globalement pour les boutons HTML
+window.cancelTicket = cancelTicket;
+window.cancelModification = cancelModification;
+window.validateModification = validateModification;

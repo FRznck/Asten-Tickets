@@ -33,17 +33,16 @@
                     </button>
                 </nav>
 
-                <div class="user-profile">
-                    <div class="user-avatar">AD</div>
-                    <div>
-                        <div style="font-weight: 600;">Admin</div>
-                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Groupe Asten</div>
-                    </div>
+                <div class="user-profile" style="display: flex; align-items: center; gap: 16px;">
+                    <div style="font-weight: 600;">Admin</div>
+                    <span>Bienvenue, Utilisateur</span>
+                    <div class="user-avatar">U</div>
                 </div>
+                 <button id="logout-btn" class="btn btn-logout">Déconnexion</button>
             </div>
         </div>
     </header>
-
+                        
     <!-- Main Content -->
     <main class="main-content">
         <div class="container">
@@ -316,6 +315,9 @@
     <div id="toast" class="toast"></div>
 
     <script src="js/admin.js"></script>
+    <script type="module" src="js/auth-session.js"></script>
+    <script type="module" src="js/user.js"></script>
+
 </body>
 </html>
                         

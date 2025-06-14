@@ -451,3 +451,15 @@
     display: block;
 }
 
+.ticket-empty {
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
+    padding: 20px;
+    border: 1px dashed #ccc;
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    margin-top: 10px;
+}
+
+
