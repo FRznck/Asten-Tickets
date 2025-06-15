@@ -15,6 +15,6 @@ export async function redirectBasedOnRole(user) {
         }
     } else {
         alert("Utilisateur introuvable. Veuillez vous connecter à nouveau.");
-        window.location.href = "auth.html";
+        window.location.href = "loading.html";
     }
 }

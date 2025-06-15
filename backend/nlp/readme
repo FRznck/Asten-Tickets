@@ -1,0 +1,14 @@
+Structure du projet :
+Un dossier backend/nlp/ contenant tous les fichiers nécessaires
+Un fichier requirements.txt avec toutes les dépendances Python nécessaires
+Modules principaux :
+preprocessing.py : Gère tout le prétraitement du texte (nettoyage, tokenisation, lemmatisation, vectorisation)
+models.py : Contient les différents modèles de classification (SVM, Naive Bayes, Random Forest) et leurs évaluations
+main.py : Orchestre l'ensemble du processus
+Fonctionnalités implémentées :
+Prétraitement complet des données
+Support de plusieurs modèles de classification
+Évaluation des performances avec métriques détaillées
+Génération de graphiques (matrice de confusion)
+Sauvegarde des résultats et des modèles
+Réentraînement à partir de nouvelles données

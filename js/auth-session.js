@@ -22,7 +22,7 @@ onAuthStateChanged(auth, (user) => {
         }
     } else {
         
-        window.location.href = "auth.html";
+        window.location.href = "loading.html";
     }
 });
 
@@ -31,7 +31,7 @@ if (logoutBtn) {
         signOut(auth)
             .then(() => {
                 console.log("Déconnecté");
-                window.location.href = "auth.html";
+                window.location.href = "loading.html";
             })
             .catch((error) => {
                 console.error("Erreur déconnexion :", error);
