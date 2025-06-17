@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chargement - Helpdesk IA</title>
+    <title>Asten - Catégorisation Intelligente</title>
     <style>
         * {
             margin: 0;
@@ -12,44 +12,206 @@
         }
 
         body {
-            background: #0a0a0a;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             height: 100vh;
-            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
         }
 
         .loading-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: radial-gradient(ellipse at center, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
-            z-index: 9999;
-            transition: opacity 1s ease-out, transform 1s ease-out;
+            text-align: center;
+            color: white;
+            position: relative;
+            z-index: 10;
         }
 
-        .loading-container.fade-out {
+        .logo {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
             opacity: 0;
-            transform: scale(0.95);
+            animation: fadeInUp 1s ease-out 0.2s forwards;
         }
 
-        /* Grille de fond style Matrix/IA */
-        .ai-grid {
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0;
+            color: rgba(255, 255, 255, 0.9);
+            animation: fadeInUp 1s ease-out 0.4s forwards;
+        }
+
+        .loading-spinner {
+            position: relative;
+            margin: 2rem auto;
+            width: 100px;
+            height: 100px;
+        }
+
+        .spinner {
             position: absolute;
             width: 100%;
             height: 100%;
-            background-image: 
-                linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
-            background-size: 50px 50px;
-            animation: gridMove 20s linear infinite;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .spinner:nth-child(2) {
+            animation-delay: -0.25s;
+            border-top-color: #00d4ff;
+        }
+
+        .spinner:nth-child(3) {
+            animation-delay: -0.5s;
+            border-top-color: #ff6b6b;
+        }
+
+        .progress-container {
+            width: 300px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            margin: 2rem auto;
+            overflow: hidden;
+            opacity: 0;
+            animation: fadeInUp 1s ease-out 0.6s forwards;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff, #ff6b6b, #4ecdc4);
+            background-size: 300% 100%;
+            border-radius: 3px;
+            width: 0%;
+            animation: progressFill 3s ease-in-out infinite,
+                       gradientShift 2s ease-in-out infinite;
+        }
+
+        .loading-text {
+            font-size: 1rem;
+            margin-top: 1rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease-out 0.8s forwards;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .status-messages {
+            margin-top: 1.5rem;
+            height: 30px;
+            opacity: 0;
+            animation: fadeInUp 1s ease-out 1s forwards;
+        }
+
+        .status-message {
+            opacity: 0;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            animation: messageRotate 8s ease-in-out infinite;
+        }
+
+        .status-message:nth-child(1) { animation-delay: 0s; }
+        .status-message:nth-child(2) { animation-delay: 2s; }
+        .status-message:nth-child(3) { animation-delay: 4s; }
+        .status-message:nth-child(4) { animation-delay: 6s; }
+
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float 15s linear infinite;
+        }
+
+        .ai-icon {
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
             opacity: 0.3;
+            animation: aiPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes progressFill {
+            0%, 100% { width: 0%; }
+            50% { width: 100%; }
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes messageRotate {
+            0%, 20% { opacity: 1; transform: translateY(0); }
+            25%, 95% { opacity: 0; transform: translateY(-10px); }
+            100% { opacity: 0; transform: translateY(10px); }
+        }
+
+        @keyframes float {
+            from {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10%, 90% {
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes aiPulse {
+            0%, 100% { opacity: 0.3; transform: translateX(-50%) scale(1); }
+            50% { opacity: 0.6; transform: translateX(-50%) scale(1.1); }
+        }
+
+        .tech-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 1px 1px, rgba(255,255,255,0.1) 1px, transparent 0);
+            background-size: 50px 50px;
+            opacity: 0.3;
+            animation: gridMove 20s linear infinite;
         }
 
         @keyframes gridMove {
@@ -57,816 +219,147 @@
             100% { transform: translate(50px, 50px); }
         }
 
-        /* Particules de données binaires */
-        .binary-rain {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            pointer-events: none;
-        }
-
-        .binary-digit {
-            position: absolute;
-            color: #00ff41;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            animation: binaryFall 3s linear infinite;
-            opacity: 0.7;
-        }
-
-        @keyframes binaryFall {
-            0% {
-                transform: translateY(-100px);
-                opacity: 0;
-            }
-            10% {
-                opacity: 0.7;
-            }
-            90% {
-                opacity: 0.7;
-            }
-            100% {
-                transform: translateY(calc(100vh + 100px));
-                opacity: 0;
-            }
-        }
-
-        /* Cerveau IA central */
-        .ai-brain-container {
-            position: relative;
-            margin-bottom: 60px;
-            animation: brainPulse 4s ease-in-out infinite;
-        }
-
-        @keyframes brainPulse {
-            0%, 100% { 
-                transform: scale(1);
-                filter: brightness(1);
-            }
-            50% { 
-                transform: scale(1.05);
-                filter: brightness(1.2);
-            }
-        }
-
-        .ai-brain {
-            width: 150px;
-            height: 150px;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .brain-core {
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(45deg, #00d4ff, #0099cc, #0066ff);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            box-shadow: 
-                0 0 30px rgba(0, 212, 255, 0.6),
-                inset 0 0 30px rgba(0, 212, 255, 0.3);
-            animation: coreGlow 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes coreGlow {
-            0% { 
-                box-shadow: 
-                    0 0 30px rgba(0, 212, 255, 0.6),
-                    inset 0 0 30px rgba(0, 212, 255, 0.3);
-            }
-            100% { 
-                box-shadow: 
-                    0 0 50px rgba(0, 212, 255, 0.9),
-                    inset 0 0 40px rgba(0, 212, 255, 0.5);
-            }
-        }
-
-        .brain-icon {
-            font-size: 40px;
-            animation: iconFloat 3s ease-in-out infinite;
-        }
-
-        @keyframes iconFloat {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
-        }
-
-        /* Orbites de données */
-        .data-orbit {
-            position: absolute;
-            border: 2px solid transparent;
-            border-radius: 50%;
-            border-top: 2px solid rgba(0, 255, 255, 0.8);
-            border-right: 2px solid rgba(0, 255, 255, 0.4);
-            animation: orbitRotate 3s linear infinite;
-        }
-
-        .orbit-1 {
-            width: 150px;
-            height: 150px;
-            animation-duration: 4s;
-        }
-
-        .orbit-2 {
-            width: 180px;
-            height: 180px;
-            top: -15px;
-            left: -15px;
-            animation-duration: 6s;
-            animation-direction: reverse;
-            border-top: 2px solid rgba(255, 0, 255, 0.8);
-            border-right: 2px solid rgba(255, 0, 255, 0.4);
-        }
-
-        .orbit-3 {
-            width: 210px;
-            height: 210px;
-            top: -30px;
-            left: -30px;
-            animation-duration: 8s;
-            border-top: 2px solid rgba(255, 255, 0, 0.8);
-            border-right: 2px solid rgba(255, 255, 0, 0.4);
-        }
-
-        @keyframes orbitRotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Nœuds de données orbitaux */
-        .orbital-node {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            background: #00ff41;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #00ff41;
-            animation: nodeOrbit 4s linear infinite;
-        }
-
-        .node-1 {
-            animation-duration: 4s;
-            animation-delay: 0s;
-        }
-
-        .node-2 {
-            animation-duration: 6s;
-            animation-delay: -2s;
-        }
-
-        .node-3 {
-            animation-duration: 8s;
-            animation-delay: -4s;
-        }
-
-        @keyframes nodeOrbit {
-            0% { 
-                transform: rotate(0deg) translateX(75px) rotate(0deg);
-                opacity: 0.5;
-            }
-            50% {
-                opacity: 1;
-            }
-            100% { 
-                transform: rotate(360deg) translateX(75px) rotate(-360deg);
-                opacity: 0.5;
-            }
-        }
-
-        /* Flux de données IA */
-        .ai-data-stream {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            overflow: hidden;
-        }
-
-        .data-packet {
-            position: absolute;
-            width: 4px;
-            height: 20px;
-            background: linear-gradient(180deg, transparent, #00ff41, transparent);
-            animation: dataFlow 2s linear infinite;
-        }
-
-        @keyframes dataFlow {
-            0% {
-                transform: translateY(-100px) scaleY(0);
-                opacity: 0;
-            }
-            20% {
-                opacity: 1;
-                transform: translateY(0) scaleY(1);
-            }
-            80% {
-                opacity: 1;
-                transform: translateY(calc(100vh - 100px)) scaleY(1);
-            }
-            100% {
-                transform: translateY(100vh) scaleY(0);
-                opacity: 0;
-            }
-        }
-
-        /* Texte de chargement IA */
-        .loading-text {
-            color: white;
-            text-align: center;
-            margin-bottom: 40px;
-            position: relative;
-        }
-
-        .loading-title {
-            font-size: 36px;
-            font-weight: 700;
-            margin-bottom: 10px;
-            background: linear-gradient(45deg, #00d4ff, #0099cc, #00ff41, #ff00ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            background-size: 400% 400%;
-            animation: titleGradient 3s ease-in-out infinite;
-        }
-
-        @keyframes titleGradient {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        .loading-subtitle {
-            font-size: 18px;
-            opacity: 0.8;
-            margin-bottom: 20px;
-            color: #00d4ff;
-            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
-        }
-
-        .ai-tagline {
-            font-size: 14px;
-            opacity: 0.6;
-            color: #00ff41;
-            font-family: 'Courier New', monospace;
-            animation: typewriter 2s steps(30) infinite;
-        }
-
-        @keyframes typewriter {
-            0%, 50% { width: 0; }
-            100% { width: 100%; }
-        }
-
-        /* Barre de progression quantique */
-        .quantum-progress {
-            width: 350px;
-            height: 8px;
-            background: rgba(0, 212, 255, 0.2);
-            border-radius: 10px;
-            overflow: hidden;
-            position: relative;
-            margin-bottom: 30px;
-            border: 1px solid rgba(0, 212, 255, 0.3);
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #00ff41, #00d4ff, #ff00ff, #ffff00);
-            border-radius: 10px;
-            width: 0%;
-            position: relative;
-            background-size: 200% 100%;
-            animation: quantumFlow 2s linear infinite, progressFill 5s ease-out forwards;
-        }
-
-        @keyframes quantumFlow {
-            0% { background-position: 0% 0%; }
-            100% { background-position: 200% 0%; }
-        }
-
-        @keyframes progressFill {
-            0% { width: 0%; }
-            100% { width: 100%; }
-        }
-
-        .progress-particles {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-
-        .progress-particle {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: #fff;
-            border-radius: 50%;
-            animation: particleMove 1s linear infinite;
-        }
-
-        @keyframes particleMove {
-            0% {
-                transform: translateX(-10px);
-                opacity: 0;
-            }
-            50% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateX(350px);
-                opacity: 0;
-            }
-        }
-
-        /* Statuts de chargement IA */
-        .ai-status {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 16px;
-            min-height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            font-family: 'Courier New', monospace;
-        }
-
-        .status-icon {
-            font-size: 20px;
-            animation: statusGlow 1.5s ease-in-out infinite;
-        }
-
-        @keyframes statusGlow {
-            0%, 100% { 
-                transform: scale(1);
-                filter: brightness(1);
-            }
-            50% { 
-                transform: scale(1.1);
-                filter: brightness(1.5);
-            }
-        }
-
-        .status-dots {
-            display: inline-block;
-            animation: dotPulse 1.5s infinite;
-        }
-
-        @keyframes dotPulse {
-            0%, 20% { opacity: 0; }
-            50% { opacity: 1; }
-            100% { opacity: 0; }
-        }
-
-        /* Réseau neuronal de fond */
-        .neural-network {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            opacity: 0.4;
-            pointer-events: none;
-        }
-
-        .neural-node {
-            position: absolute;
-            width: 6px;
-            height: 6px;
-            background: #00ff41;
-            border-radius: 50%;
-            box-shadow: 0 0 8px #00ff41;
-            animation: neuralPulse 3s ease-in-out infinite;
-        }
-
-        @keyframes neuralPulse {
-            0%, 100% { 
-                opacity: 0.4;
-                transform: scale(1);
-            }
-            50% { 
-                opacity: 1;
-                transform: scale(1.8);
-            }
-        }
-
-        .neural-connection {
-            position: absolute;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.6), transparent);
-            animation: connectionPulse 2s linear infinite;
-        }
-
-        @keyframes connectionPulse {
-            0%, 100% { 
-                opacity: 0.2;
-                transform: scaleX(0.5);
-            }
-            50% { 
-                opacity: 1;
-                transform: scaleX(1);
-            }
-        }
-
-        /* Animation de succès IA */
-        .ai-success {
-            display: none;
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #00ff41, #00d4ff);
-            position: relative;
-            margin: 20px auto;
-            animation: successPulse 0.8s ease-out;
-            box-shadow: 0 0 30px rgba(0, 255, 65, 0.8);
-        }
-
-        .ai-success.show {
-            display: block;
-        }
-
-        .ai-success::after {
-            content: '🤖';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 48px;
-            animation: successSpin 0.8s ease-out;
-        }
-
-        @keyframes successPulse {
-            0% {
-                transform: scale(0);
-                opacity: 0;
-            }
-            50% {
-                transform: scale(1.2);
-                opacity: 1;
-            }
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-
-        @keyframes successSpin {
-            0% { transform: translate(-50%, -50%) rotate(0deg); }
-            100% { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-
-        /* Hologramme d'activation */
-        .hologram-effect {
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            border: 2px solid rgba(0, 255, 255, 0.3);
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            animation: hologramScan 4s linear infinite;
-            pointer-events: none;
-        }
-
-        @keyframes hologramScan {
-            0% {
-                transform: translate(-50%, -50%) scale(0.8);
-                opacity: 0;
-            }
-            50% {
-                opacity: 1;
-            }
-            100% {
-                transform: translate(-50%, -50%) scale(1.5);
-                opacity: 0;
-            }
-        }
-
-        /* Interface principale */
-        .main-app {
-            display: none;
-            width: 100%;
-            height: 100vh;
-            background: radial-gradient(ellipse at center, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
-            overflow: hidden;
-        }
-
-        .main-app.show {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-        }
-
-        .welcome-brain {
-            font-size: 80px;
-            margin-bottom: 30px;
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow {
-            0% { 
-                filter: brightness(1) drop-shadow(0 0 20px rgba(0, 255, 255, 0.5));
-            }
-            100% { 
-                filter: brightness(1.3) drop-shadow(0 0 40px rgba(0, 255, 255, 0.8));
-            }
-        }
-
-        .welcome-title {
-            font-size: 48px;
-            margin-bottom: 20px;
-            background: linear-gradient(45deg, #00d4ff, #00ff41);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-weight: 700;
-        }
-
-        .welcome-subtitle {
-            font-size: 24px;
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 40px;
-            max-width: 600px;
-            line-height: 1.4;
-        }
-
-        .ai-features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            max-width: 900px;
-            margin-top: 40px;
-        }
-
-        .feature-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(0, 255, 255, 0.3);
-            border-radius: 15px;
-            padding: 20px;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(0, 255, 255, 0.6);
-            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.2);
-        }
-
-        .feature-icon {
-            font-size: 32px;
-            margin-bottom: 15px;
-            display: block;
-        }
-
-        .feature-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #00d4ff;
-        }
-
-        .feature-desc {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.7);
-            line-height: 1.4;
-        }
-
-        .start-button {
-            margin-top: 40px;
-            padding: 15px 40px;
-            background: linear-gradient(45deg, #00ff41, #00d4ff);
-            border: none;
-            border-radius: 30px;
-            color: #000;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 20px rgba(0, 255, 65, 0.3);
-        }
-
-        .start-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(0, 255, 65, 0.5);
-        }
-
-        /* Responsive */
         @media (max-width: 768px) {
-            .loading-title { font-size: 28px; }
-            .loading-subtitle { font-size: 16px; }
-            .quantum-progress { width: 280px; }
-            .ai-brain { width: 120px; height: 120px; }
-            .brain-core { width: 80px; height: 80px; }
-            .welcome-brain { font-size: 60px; }
-            .welcome-title { font-size: 36px; }
-            .welcome-subtitle { font-size: 18px; }
-            .ai-features { grid-template-columns: 1fr; }
+            .logo { font-size: 2rem; }
+            .subtitle { font-size: 1rem; }
+            .progress-container { width: 250px; }
         }
     </style>
 </head>
 <body>
-    <script>
-        setTimeout(function() {
-            window.location.href = 'auth.html';
-        }, 5000);
-    </script>
+    <div class="tech-grid"></div>
+    
+    <div class="floating-particles" id="particles"></div>
+    
     <div class="loading-container">
-        <!-- Grille de fond IA -->
-        <div class="ai-grid"></div>
-
-        <!-- Pluie de données binaires -->
-        <div class="binary-rain" id="binaryRain"></div>
-
-        <!-- Flux de données IA -->
-        <div class="ai-data-stream" id="aiDataStream"></div>
-
-        <!-- Réseau neuronal -->
-        <div class="neural-network" id="neuralNetwork"></div>
-
-        <!-- Hologramme d'activation -->
-        <div class="hologram-effect"></div>
-
-        <!-- Cerveau IA central -->
-        <div class="ai-brain-container">
-            <div class="ai-brain">
-                <div class="data-orbit orbit-1"></div>
-                <div class="data-orbit orbit-2"></div>
-                <div class="data-orbit orbit-3"></div>
-                <div class="orbital-node node-1"></div>
-                <div class="orbital-node node-2"></div>
-                <div class="orbital-node node-3"></div>
-                <div class="brain-core">
-                    <div class="brain-icon">🧠</div>
-                </div>
-            </div>
+        <div class="ai-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
         </div>
-
-        <!-- Texte de chargement -->
-        <div class="loading-text">
-            <h1 class="loading-title">HELPDESK IA</h1>
-            <p class="loading-subtitle">Intelligence Artificielle Avancée</p>
-            <p class="ai-tagline">Système de Classification Autonome</p>
-        </div>
-
-        <!-- Barre de progression quantique -->
-        <div class="quantum-progress">
-            <div class="progress-bar" id="progressBar"></div>
-            <div class="progress-particles" id="progressParticles"></div>
-        </div>
-
-        <!-- Statut de chargement IA -->
-        <div class="ai-status" id="aiStatus">
-            <span class="status-icon">⚡</span>
-            <span id="statusText">Initialisation des réseaux neuronaux</span>
-            <span class="status-dots">...</span>
-        </div>
-
-        <!-- Succès IA -->
-        <div class="ai-success" id="aiSuccess"></div>
-    </div>
-
-    <!-- Interface principale -->
-    <div class="main-app" id="mainApp">
-        <div class="welcome-brain">🧠</div>
-        <h1 class="welcome-title">HELPDESK IA ACTIVÉ</h1>
-        <p class="welcome-subtitle">
-            Votre assistant intelligent de support technique est maintenant opérationnel. 
-            Utilisez la puissance de l'IA pour résoudre vos problèmes techniques rapidement et efficacement.
-        </p>
         
-        <div class="ai-features">
-            <div class="feature-card">
-                <span class="feature-icon">🔍</span>
-                <div class="feature-title">Diagnostic Intelligent</div>
-                <div class="feature-desc">Analyse automatique des problèmes avec des solutions personnalisées</div>
-            </div>
-            <div class="feature-card">
-                <span class="feature-icon">⚡</span>
-                <div class="feature-title">Résolution Rapide</div>
-                <div class="feature-desc">Réponses instantanées basées sur une base de connaissances évolutive</div>
-            </div>
-            <div class="feature-card">
-                <span class="feature-icon">📊</span>
-                <div class="feature-title">Analyse Prédictive</div>
-                <div class="feature-desc">Prévention des problèmes grâce à l'apprentissage automatique</div>
-            </div>
-            <div class="feature-card">
-                <span class="feature-icon">🤖</span>
-                <div class="feature-title">Assistant 24/7</div>
-                <div class="feature-desc">Support continu avec amélioration constante des performances</div>
-            </div>
+        <div class="logo">ASTEN</div>
+        <div class="subtitle">Catégorisation Intelligente des Tickets</div>
+        
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <div class="spinner"></div>
+            <div class="spinner"></div>
         </div>
-
-        <button class="start-button" onclick="startHelpdesk()">
-            Commencer l'Assistance IA
-        </button>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div class="loading-text">Initialisation en cours...</div>
+        
+        <div class="status-messages">
+            <div class="status-message">🤖 Chargement des modèles IA...</div>
+            <div class="status-message">📊 Analyse des données NLP...</div>
+            <div class="status-message">🔧 Configuration des algorithmes...</div>
+            <div class="status-message">✨ Préparation de l'interface...</div>
+        </div>
     </div>
 
     <script>
-        class AIHelpDeskLoader {
-            constructor() {
-                this.loadingSteps = [
-                    { text: "Initialisation des réseaux neuronaux", icon: "⚡", duration: 900 },
-                    { text: "Calibrage des algorithmes d'apprentissage", icon: "🧠", duration: 1100 },
-                    { text: "Chargement des modèles de classification", icon: "🤖", duration: 1000 },
-                    { text: "Synchronisation des données vectorielles", icon: "📊", duration: 800 },
-                    { text: "Optimisation des performances IA", icon: "⚙️", duration: 900 },
-                    { text: "Finalisation du système intelligent", icon: "✨", duration: 700 }
-                ];
-                
-                this.currentStep = 0;
-                this.init();
+        // Génération des particules flottantes
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                container.appendChild(particle);
             }
+        }
 
-            init() {
-                this.createBinaryRain();
-                this.createDataStream();
-                this.createNeuralNetwork();
-                this.createProgressParticles();
-                this.startAILoadingSequence();
-            }
-
-            createBinaryRain() {
-                const rainContainer = document.getElementById('binaryRain');
-                const binaryChars = ['0', '1'];
-                
-                for (let i = 0; i < 100; i++) {
-                    const digit = document.createElement('div');
-                    digit.className = 'binary-digit';
-                    digit.textContent = binaryChars[Math.floor(Math.random() * 2)];
-                    digit.style.left = Math.random() * 100 + '%';
-                    digit.style.animationDelay = Math.random() * 3 + 's';
-                    digit.style.animationDuration = (2 + Math.random() * 3) + 's';
-                    digit.style.fontSize = (10 + Math.random() * 8) + 'px';
-                    rainContainer.appendChild(digit);
+        // Animation de la barre de progression
+        function animateProgress() {
+            const progressBar = document.getElementById('progressBar');
+            let progress = 0;
+            
+            const interval = setInterval(() => {
+                progress += Math.random() * 3;
+                if (progress > 100) {
+                    progress = 100;
+                    clearInterval(interval);
                     
-                    // Changer le caractère périodiquement
-                    setInterval(() => {
-                        digit.textContent = binaryChars[Math.floor(Math.random() * 2)];
-                    }, 500 + Math.random() * 1000);
-                }
-            }
-
-            createDataStream() {
-                const streamContainer = document.getElementById('aiDataStream');
-                
-                for (let i = 0; i < 30; i++) {
-                    const packet = document.createElement('div');
-                    packet.className = 'data-packet';
-                    packet.style.left = Math.random() * 100 + '%';
-                    packet.style.animationDelay = Math.random() * 2 + 's';
-                    packet.style.animationDuration = (1.5 + Math.random() * 1) + 's';
-                    
-                    // Couleurs alternées pour les paquets
-                    const colors = ['#00ff41', '#00d4ff', '#ff00ff', '#ffff00'];
-                    const color = colors[Math.floor(Math.random() * colors.length)];
-                    packet.style.background = `linear-gradient(180deg, transparent, ${color}, transparent)`;
-                    
-                    streamContainer.appendChild(packet);
-                }
-            }
-
-            createNeuralNetwork() {
-                const networkContainer = document.getElementById('neuralNetwork');
-                
-                // Créer les nœuds neuronaux
-                const nodes = [];
-                for (let i = 0; i < 25; i++) {
-                    const node = document.createElement('div');
-                    node.className = 'neural-node';
-                    const x = Math.random() * 100;
-                    const y = Math.random() * 100;
-                    node.style.left = x + '%';
-                    node.style.top = y + '%';
-                    node.style.animationDelay = Math.random() * 3 + 's';
-                    networkContainer.appendChild(node);
-                    nodes.push({ element: node, x, y });
-                }
-
-                // Créer les connexions entre nœuds proches
-                for (let i = 0; i < nodes.length; i++) {
-                    for (let j = i + 1; j < nodes.length; j++) {
-                        const distance = Math.sqrt(
-                            Math.pow(nodes[i].x - nodes[j].x, 2) + 
-                            Math.pow(nodes[i].y - nodes[j].y, 2)
-                        );
+                    // Simulation de fin de chargement
+                    setTimeout(() => {
+                        document.body.style.opacity = '0';
+                        document.body.style.transition = 'opacity 0.5s ease-out';
                         
-                        if (distance < 25 && Math.random() > 0.7) {
-                            const connection = document.createElement('div');
-                            connection.className = 'neural-connection';
-                            
-                            const angle = Math.atan2(nodes[j].y - nodes[i].y, nodes[j].x - nodes[i].x);
-                            const length = distance * (Math.min(window.innerWidth, window.innerHeight) / 100);
-                            
-                            connection.style.left = nodes[i].x + '%';
-                            connection.style.top = nodes[i].y + '%';
-                            connection.style.width = length + 'px';
-                            connection.style.transform = `rotate(
+                        setTimeout(() => {
+                            // Ici vous pouvez rediriger vers la page principale
+                            window.location.href = 'auth.html';
+                            console.log('Chargement terminé - Redirection vers le dashboard');
+                        }, 500);
+                    }, 1000);
+                }
+                
+                progressBar.style.width = progress + '%';
+            }, 100);
+        }
+
+        // Effet de pulsation sur le logo
+        function addLogoPulse() {
+            const logo = document.querySelector('.logo');
+            setInterval(() => {
+                logo.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    logo.style.transform = 'scale(1)';
+                }, 200);
+            }, 3000);
+        }
+
+        // Messages de statut dynamiques
+        const statusMessages = [
+            "🔍 Analyse des patterns de tickets...",
+            "🎯 Optimisation des algorithmes...",
+            "📈 Calibrage des modèles ML...",
+            "🚀 Finalisation du système...",
+            "✅ Système prêt!"
+        ];
+
+        function updateStatusMessage() {
+            const messages = document.querySelectorAll('.status-message');
+            let currentIndex = 0;
+            
+            setInterval(() => {
+                if (currentIndex < statusMessages.length) {
+                    if (messages[currentIndex % 4]) {
+                        messages[currentIndex % 4].textContent = statusMessages[currentIndex];
+                    }
+                    currentIndex++;
+                }
+            }, 2000);
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            animateProgress();
+            addLogoPulse();
+            updateStatusMessage();
+            
+            // Ajouter une transition fluide au logo
+            const logo = document.querySelector('.logo');
+            logo.style.transition = 'transform 0.2s ease-out';
+        });
+
+        // Effet de survol sur le conteneur
+        document.querySelector('.loading-container').addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.02)';
+            this.style.transition = 'transform 0.3s ease-out';
+        });
+
+        document.querySelector('.loading-container').addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    </script>
+</body>
+</html>
