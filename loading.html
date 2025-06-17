@@ -870,3 +870,10 @@
                             connection.style.top = nodes[i].y + '%';
                             connection.style.width = length + 'px';
                             connection.style.transform = `rotate(
+                            ${angle * 180 / Math.PI}deg)`;
+                            networkContainer.appendChild(connection);
+                        }
+                    }
+                }
+            }
+            }

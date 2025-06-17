@@ -1,64 +1,41 @@
 
         // Application State
-        let currentTab = 'dashboard';
-        let tickets = [
-            {
-                id: 'TK-2024-001',
-                title: 'Problème de connexion VPN',
-                status: 'nouveau',
-                category: 'technique',
-                confidence: 92,
-                date: '2024-06-03',
-                description: 'Impossible de se connecter au VPN entreprise depuis ce matin',
-                email: 'user1@company.com',
-                priority: 'high'
-            },
-            {
-                id: 'TK-2024-002',
-                title: 'Demande de remboursement',
-                status: 'en-cours',
-                category: 'facturation',
-                confidence: 87,
-                date: '2024-06-02',
-                description: 'Demande de remboursement pour service non utilisé',
-                email: 'user2@company.com',
-                priority: 'medium'
-            },
-            {
-                id: 'TK-2024-003',
-                title: 'Formation sur nouveau logiciel',
-                status: 'resolu',
-                category: 'support',
-                confidence: 95,
-                date: '2024-06-01',
-                description: 'Besoin de formation sur le nouveau CRM',
-                email: 'user3@company.com',
-                priority: 'low'
-            },
-            {
-                id: 'TK-2024-004',
-                title: 'Erreur application mobile',
-                status: 'nouveau',
-                category: 'technique',
-                confidence: 89,
-                date: '2024-06-03',
-                description: 'L\'application mobile crash au démarrage',
-                email: 'user4@company.com',
-                priority: 'high'
-            },
-            {
-                id: 'TK-2024-005',
-                title: 'Question sur facturation',
-                status: 'ferme',
-                category: 'facturation',
-                confidence: 94,
-                date: '2024-05-30',
-                description: 'Clarification nécessaire sur dernière facture',
-                email: 'user5@company.com',
-                priority: 'medium'
-            }
-        ];
+// Récupère et affiche les tickets réels depuis l'API
+async function fetchTickets() {
+    const response = await fetch('backend/api/get_tickets.php');
+    const tickets = await response.json();
+    return tickets;
+}
 
+function renderTicketsTable(tickets) {
+    const tbody = document.getElementById('ticketsTableBody');
+    tbody.innerHTML = tickets.map(ticket => `
+        <tr>
+            <td>${ticket.ticket_id}</td>
+            <td>${ticket.titre}</td>
+            <td>${ticket.statut}</td>
+            <td>${ticket.categorie || ''}</td>
+            <td><!-- Confiance à ajouter si dispo --></td>
+            <td>${ticket.date_creation}</td>
+            <td>
+                <button class="btn btn-secondary" onclick="viewTicket('${ticket.ticket_id}')">👁️ Voir</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Initialisation au chargement
+document.addEventListener('DOMContentLoaded', async () => {
+    const tickets = await fetchTickets();
+    renderTicketsTable(tickets);
+});
+
+
+// Au chargement de la page
+document.addEventListener('DOMContentLoaded', async () => {
+    const tickets = await fetchTickets();
+    renderTickets(tickets);
+});
         // DOM Elements
         const navTabs = document.querySelectorAll('.nav-tab');
         const tabContents = document.querySelectorAll('.tab-content');

@@ -27,8 +27,8 @@ class NLPProcessor:
         
         # Division en ensembles d'entraînement et de test
         X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42
-        )
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
         
         # Entraînement des modèles
         results = self.model_trainer.train_models(X_train, y_train)
@@ -63,16 +63,26 @@ class NLPProcessor:
 
     def save_results(self, training_results, evaluation_results):
         """Sauvegarde les résultats de l'entraînement et de l'évaluation."""
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        
-        results = {
-            'timestamp': timestamp,
-            'training_results': training_results,
-            'evaluation_results': evaluation_results
-        }
-        
-        with open(f'results_{timestamp}.json', 'w', encoding='utf-8') as f:
-            json.dump(results, f, ensure_ascii=False, indent=4)
+    from numpy import ndarray
+
+    def convert_ndarray(obj):
+        if isinstance(obj, ndarray): # type: ignore
+            return obj.tolist()
+        if isinstance(obj, dict):
+            return {k: convert_ndarray(v) for k, v in obj.items()} # type: ignore
+        if isinstance(obj, list):
+            return [convert_ndarray(v) for v in obj] # type: ignore
+        return obj
+
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    results = {
+        'timestamp': timestamp,
+        'training_results': convert_ndarray(training_results), # type: ignore
+        'evaluation_results': convert_ndarray(evaluation_results) # type: ignore
+    }
+
+    with open(f'results_{timestamp}.json', 'w', encoding='utf-8') as f:
+        json.dump(results, f, ensure_ascii=False, indent=4)
 
     def retrain(self, new_data):
         """Réentraîne le modèle avec de nouvelles données."""
@@ -85,10 +95,13 @@ if __name__ == "__main__":
     
     # Exemple de données
     sample_data = [
-        {'text': 'Je ne peux pas accéder à mon compte', 'label': 'connexion'},
-        {'text': 'Mon écran est noir', 'label': 'hardware'},
-        # Ajoutez plus d'exemples ici
-    ]
+    {'text': 'Je ne peux pas accéder à mon compte', 'label': 'connexion'},
+    {'text': 'Mon écran est noir', 'label': 'hardware'},
+    {'text': 'Mot de passe oublié', 'label': 'connexion'},
+    {'text': 'Le clavier ne fonctionne plus', 'label': 'hardware'},
+    {'text': 'Impossible de se connecter', 'label': 'connexion'},
+    {'text': 'L’ordinateur ne démarre pas', 'label': 'hardware'},
+]
     
     # Entraînement
     results = processor.train(sample_data)
