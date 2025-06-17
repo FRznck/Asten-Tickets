@@ -6,6 +6,7 @@
     <title>Système de Catégorisation Automatique - Groupe Asten</title>
     <link rel="stylesheet" href="/css/admin.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script type="module" src="/js/firebase-init.js"></script>
     
 </head>
 <body>
@@ -160,8 +161,7 @@
                                     <th>Titre</th>
                                     <th>Statut</th>
                                     <th>Catégorie</th>
-                                    <th>Confiance</th>
-                                    <th>Date</th>
+                                    <th>Date de création</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -271,7 +271,12 @@
         </div>
     </main>
 
-    <!-- Modal for New Ticket -->
+    <!-- Modal pour les détails des tickets -->
+    <div id="ticketDetailsModal" class="modal">
+        <!-- Le contenu sera injecté dynamiquement par JavaScript -->
+    </div>
+
+    <!-- Modal pour nouveau ticket -->
     <div id="ticketModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -293,7 +298,7 @@
                         <option value="low">Basse</option>
                         <option value="medium" selected>Moyenne</option>
                         <option value="high">Haute</option>
-                        <option value="urgent">Urgente</option>
+                        <option value="urgent">Urgente</option> 
                     </select>
                 </div>
                 <div class="form-group">
@@ -311,13 +316,14 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
+    <!-- Toast notifications -->
     <div id="toast" class="toast"></div>
 
-    <script src="js/admin.js"></script>
-    <script type="module" src="js/auth-session.js"></script>
-    <script type="module" src="js/user.js"></script>
-
+    <!-- Scripts -->
+    <script type="module" src="/js/firebase-init.js"></script>
+    <script type="module" src="/js/tickets-manager.js"></script>
+    <script type="module" src="/js/admin.js"></script>
+    <script type="module" src="/js/auth-session.js"></script>
 </body>
 </html>
                         

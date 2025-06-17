@@ -1,4 +1,3 @@
-
         * {
             margin: 0;
             padding: 0;
@@ -682,5 +681,120 @@
 
         .toast.error {
             background: var(--danger-color);
+        }
+
+        /* Styles pour la modal de détails des tickets */
+        .ticket-details {
+            padding: 20px;
+        }
+
+        .detail-group {
+            margin-bottom: 15px;
+        }
+
+        .detail-group label {
+            display: block;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 5px;
+        }
+
+        .detail-group span {
+            display: inline-block;
+            color: #1f2937;
+        }
+
+        .detail-group p {
+            margin: 0;
+            color: #1f2937;
+            line-height: 1.5;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .no-tickets {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        /* Styles pour les statuts et catégories */
+        .ticket-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-nouveau {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-en-cours {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-resolu {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .status-ferme {
+            background-color: #f3f4f6;
+            color: #374151;
+        }
+
+        .category-tag {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .cat-bug-report {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .cat-support-technique {
+            background-color: #e0f2fe;
+            color: #075985;
+        }
+
+        .cat-assistance-générale {
+            background-color: #f3e8ff;
+            color: #6b21a8;
+        }
+
+        .ticket-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .ticket-actions .btn {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .ticket-actions .btn-primary {
+            background-color: #2563eb;
+            color: white;
+        }
+
+        .ticket-actions .btn-primary:hover {
+            background-color: #1d4ed8;
         }
     
