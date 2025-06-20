@@ -9,6 +9,63 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/fi
 let currentTicket = null;
 let tickets = [];
 
+// Configuration de l'API NLP
+const NLP_API_BASE_URL = 'http://localhost:8000';
+
+// Fonction pour prédire la catégorie via l'API NLP
+async function predictCategory(title, description) {
+    try {
+        const response = await fetch(`${NLP_API_BASE_URL}/predict`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                titre: title,
+                description: description
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+        
+        const prediction = await response.json();
+        return prediction;
+    } catch (error) {
+        console.error('Erreur lors de la prédiction NLP:', error);
+        // Fallback en cas d'erreur
+        return {
+            predicted_category: 'Autre',
+            confidence: 0.0,
+            top_categories: [],
+            needs_human_review: true,
+            keywords: []
+        };
+    }
+}
+
+// Fonction pour sauvegarder le feedback
+async function saveFeedback(ticketId, predictedCategory, actualCategory, confidence) {
+    try {
+        await fetch(`${NLP_API_BASE_URL}/feedback`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                ticket_id: ticketId,
+                predicted_category: predictedCategory,
+                actual_category: actualCategory,
+                confidence: confidence
+            })
+        });
+        console.log('Feedback sauvegardé avec succès');
+    } catch (error) {
+        console.error('Erreur lors de la sauvegarde du feedback:', error);
+    }
+}
+
 document.getElementById('ticketForm').addEventListener('submit', async function (e) {
     e.preventDefault();
 
@@ -22,17 +79,12 @@ document.getElementById('ticketForm').addEventListener('submit', async function 
     loading.style.display = 'inline-block';
     submitBtn.disabled = true;
 
-    setTimeout(async () => {
-        const categories = [
-            { name: "Support Technique", confidence: 85 },
-            { name: "Assistance Générale", confidence: 72 },
-            { name: "Bug Report", confidence: 68 }
-        ];
-
-        const predictedCategory = categories[Math.floor(Math.random() * categories.length)];
-
-        showPredictedCategory(predictedCategory);
-        showModificationSection(predictedCategory);
+    try {
+        // Prédiction via l'API NLP
+        const prediction = await predictCategory(title, description);
+        
+        showPredictedCategory(prediction);
+        showModificationSection(prediction);
 
         const user = auth.currentUser;
         if (!user) {
@@ -40,48 +92,75 @@ document.getElementById('ticketForm').addEventListener('submit', async function 
             return;
         }
 
-        try {
-            const docRef = await addDoc(collection(db, "tickets"), {
-                titre: title,
-                description: description,
-                statut: "Nouveau",
-                dateSoumission: Timestamp.now(),
-                categorie: predictedCategory.name,
-                utilisateur: user.uid
-            });
+        // Créer le ticket dans Firebase
+        const docRef = await addDoc(collection(db, "tickets"), {
+            titre: title,
+            description: description,
+            statut: "Nouveau",
+            dateSoumission: Timestamp.now(),
+            categorie: prediction.predicted_category,
+            utilisateur: user.uid,
+            confidence: prediction.confidence,
+            needs_human_review: prediction.needs_human_review,
+            keywords: prediction.keywords || []
+        });
 
-            showToast('Ticket soumis avec succès !');
-            this.reset();
-            btnText.textContent = 'Soumettre';
-            loading.style.display = 'none';
-            submitBtn.disabled = false;
+        showToast('Ticket soumis avec succès !');
+        this.reset();
+        btnText.textContent = 'Soumettre';
+        loading.style.display = 'none';
+        submitBtn.disabled = false;
 
-            await chargerTickets();
-        } catch (err) {
-            console.error("Erreur Firestore :", err);
-            alert("Échec de l'enregistrement du ticket.");
-        }
-    }, 1500);
+        await chargerTickets();
+    } catch (err) {
+        console.error("Erreur lors de la soumission:", err);
+        alert("Échec de l'enregistrement du ticket.");
+        btnText.textContent = 'Soumettre';
+        loading.style.display = 'none';
+        submitBtn.disabled = false;
+    }
 });
 
-function showPredictedCategory(category) {
+function showPredictedCategory(prediction) {
     const container = document.getElementById('predictedCategory');
-    container.innerHTML = `
+    
+    // Afficher la catégorie principale
+    const mainCategory = `
         <div class="category-predite">
             <div class="category-header">
-                <span class="category-name">${category.name}</span>
-                <span class="confidence-score">${category.confidence}%</span>
+                <span class="category-name">${prediction.predicted_category}</span>
+                <span class="confidence-score">${Math.round(prediction.confidence * 100)}%</span>
             </div>
-            <p style="color: var(--text-secondary); font-size: 0.9rem;">Catégorie suggérée par l'IA</p>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                Catégorie suggérée par l'IA
+                ${prediction.needs_human_review ? ' ⚠️ Nécessite une vérification' : ''}
+            </p>
         </div>
     `;
-    currentTicket = category;
+    
+    // Afficher les mots-clés si disponibles
+    let keywordsHtml = '';
+    if (prediction.keywords && prediction.keywords.length > 0) {
+        keywordsHtml = `
+            <div class="keywords-section" style="margin-top: 10px;">
+                <p style="font-size: 0.8rem; color: var(--text-secondary);">Mots-clés détectés:</p>
+                <div class="keywords-list" style="display: flex; flex-wrap: wrap; gap: 5px;">
+                    ${prediction.keywords.map(keyword => 
+                        `<span style="background: var(--primary-color); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem;">${keyword}</span>`
+                    ).join('')}
+                </div>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = mainCategory + keywordsHtml;
+    currentTicket = prediction;
 }
 
-function showModificationSection(category) {
+function showModificationSection(prediction) {
     document.getElementById('modifySection').style.display = 'block';
     document.getElementById('noModifyMessage').style.display = 'none';
-    document.getElementById('newCategory').value = category.name;
+    document.getElementById('newCategory').value = prediction.predicted_category;
 }
 
 function cancelTicket() {
@@ -99,14 +178,27 @@ async function validateModification() {
     if (!newCategory || tickets.length === 0) return;
 
     const ticketToUpdate = tickets[0]; // On modifie le plus récent dans ce contexte
-    ticketToUpdate.category = newCategory;
-
+    
     try {
+        // Mettre à jour dans Firebase
         const ticketRef = doc(db, "tickets", ticketToUpdate.id);
         await updateDoc(ticketRef, {
-            categorie: newCategory
+            categorie: newCategory,
+            categorie_modifiee: true,
+            date_modification: Timestamp.now()
         });
 
+        // Sauvegarder le feedback pour l'amélioration du modèle
+        if (currentTicket && currentTicket.predicted_category !== newCategory) {
+            await saveFeedback(
+                ticketToUpdate.id,
+                currentTicket.predicted_category,
+                newCategory,
+                currentTicket.confidence
+            );
+        }
+
+        ticketToUpdate.category = newCategory;
         updateTicketsDisplay();
         cancelModification();
         showToast('Catégorie modifiée et enregistrée avec succès !');
@@ -124,6 +216,8 @@ function updateTicketsDisplay() {
         const statusClass = ticket.status.toLowerCase().replace(' ', '-');
         const ticketElement = document.createElement('div');
         ticketElement.className = 'ticket-item';
+        
+        // Afficher les informations du ticket avec plus de détails
         ticketElement.innerHTML = `
             <div class="ticket-header">
                 <div class="ticket-title">${ticket.title}</div>
@@ -133,7 +227,15 @@ function updateTicketsDisplay() {
                 <span style="color: var(--text-secondary);">${ticket.description}</span>
                 <span class="ticket-date">${ticket.date}</span>
             </div>
-            <div class="ticket-category">Catégorie: ${ticket.category}</div>
+            <div class="ticket-category">
+                Catégorie: ${ticket.category}
+                ${ticket.confidence ? ` (Confiance: ${Math.round(ticket.confidence * 100)}%)` : ''}
+            </div>
+            ${ticket.keywords && ticket.keywords.length > 0 ? `
+                <div class="ticket-keywords" style="margin-top: 5px;">
+                    <small style="color: var(--text-secondary);">Mots-clés: ${ticket.keywords.join(', ')}</small>
+                </div>
+            ` : ''}
         `;
         container.appendChild(ticketElement);
     });
@@ -155,7 +257,9 @@ async function chargerTickets() {
             description: data.description,
             status: data.statut,
             date: data.dateSoumission.toDate().toLocaleDateString('fr-FR'),
-            category: data.categorie
+            category: data.categorie,
+            confidence: data.confidence,
+            keywords: data.keywords || []
         });
     });
 
@@ -175,7 +279,29 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
-window.addEventListener("load", () => {
+// Fonction pour vérifier l'état de l'API NLP
+async function checkNLPAPIHealth() {
+    try {
+        const response = await fetch(`${NLP_API_BASE_URL}/health`);
+        const health = await response.json();
+        
+        if (health.status === 'healthy') {
+            console.log('API NLP connectée et opérationnelle');
+            return true;
+        } else {
+            console.warn('API NLP non disponible:', health);
+            return false;
+        }
+    } catch (error) {
+        console.warn('Impossible de connecter à l\'API NLP:', error);
+        return false;
+    }
+}
+
+window.addEventListener("load", async () => {
+    // Vérifier l'état de l'API NLP au chargement
+    await checkNLPAPIHealth();
+    
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             await chargerTickets();
@@ -200,15 +326,27 @@ window.addEventListener("load", () => {
                     </div>
                 `;
             }
-
         } else {
-            console.warn("Utilisateur non connecté");
-           
-            window.location.href = "auth.html";
+            window.location.href = '/auth.html';
         }
     });
 });
 
+// Fonctions globales pour les filtres
+window.filterByDate = function() {
+    // Implémentation du filtre par date
+    console.log('Filtrage par date');
+};
+
+window.filterByStatus = function() {
+    // Implémentation du filtre par statut
+    console.log('Filtrage par statut');
+};
+
+window.filterByCategory = function() {
+    // Implémentation du filtre par catégorie
+    console.log('Filtrage par catégorie');
+};
 
 // On expose les fonctions globalement pour les boutons HTML
 window.cancelTicket = cancelTicket;
