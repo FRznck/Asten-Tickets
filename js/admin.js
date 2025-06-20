@@ -1,4 +1,4 @@
-import { chargerTickets, renderTicketsTable, viewTicket, changeTicketStatus } from './tickets-manager.js';
+import { chargerTickets, renderTicketsTable, viewTicket, changeTicketStatus, compterTicketsResolu } from './tickets-manager.js';
 
 // Application State
 let currentTab = 'dashboard';
@@ -109,6 +109,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     initializeCharts();
+    await updateDashboardStats();
+
+    const nbTicketsResolu = await compterTicketsResolu();
+    document.getElementById('nbTicketsResolu').textContent = nbTicketsResolu;
 });
 
 // Toast notifications
@@ -278,4 +282,88 @@ document.querySelectorAll('.settings-card button').forEach(btn => {
         });
     }
 });
+
+// Ajout : fonction pour mettre à jour les stats du dashboard avec les vraies données Firestore
+async function updateDashboardStats() {
+    // Charger tous les tickets
+    let tickets = [];
+    try {
+        tickets = await chargerTickets();
+    } catch (e) {
+        console.error('Erreur chargement tickets pour stats:', e);
+        return;
+    }
+    
+    // Statistiques à calculer
+    const now = new Date();
+    const todayStr = now.toISOString().slice(0, 10); // format YYYY-MM-DD
+    let traitesAuj = 0;
+    let enAttente = 0;
+    let totalConfidence = 0;
+    let nbConfidence = 0;
+    let totalDuree = 0;
+    let nbDuree = 0;
+    let precisionModele = 94.2; // Valeur statique par défaut
+    
+    tickets.forEach(ticket => {
+        // Tickets traités aujourd'hui (statut résolu ou fermé, date aujourd'hui)
+        if ((ticket.status === 'resolu' || ticket.status === 'ferme') && ticket.date === todayStr) {
+            traitesAuj++;
+        }
+        // Tickets en attente
+        if (ticket.status === 'nouveau' || ticket.status === 'en-cours') {
+            enAttente++;
+        }
+        // Moyenne de confiance
+        if (typeof ticket.confidence === 'number') {
+            totalConfidence += ticket.confidence;
+            nbConfidence++;
+        }
+        // Temps moyen de traitement (si tu as un champ date de résolution)
+        // Ici, on suppose qu'il y a ticket.dateResolution et ticket.dateSoumission
+        if (ticket.status === 'resolu' && ticket.dateResolution && ticket.dateSoumission) {
+            const d1 = new Date(ticket.dateSoumission);
+            const d2 = new Date(ticket.dateResolution);
+            const diffMin = (d2 - d1) / 60000;
+            if (!isNaN(diffMin)) {
+                totalDuree += diffMin;
+                nbDuree++;
+            }
+        }
+    });
+
+    // Mise à jour du DOM avec les nouveaux IDs
+    const elEnAttente = document.getElementById('stat-attente');
+    if (elEnAttente) elEnAttente.textContent = enAttente;
+
+    const elPrecision = document.getElementById('stat-precision');
+    if (elPrecision) elPrecision.textContent = (precisionModele).toFixed(1) + '%';
+
+    const elTempsMoyen = document.getElementById('stat-temps');
+    if (elTempsMoyen) {
+        if (nbDuree > 0) {
+            elTempsMoyen.textContent = (totalDuree / nbDuree).toFixed(1) + 'min';
+        } else {
+            elTempsMoyen.textContent = '--';
+        }
+    }
+}
+
+// Patch pour :contains (non supporté nativement)
+(function() {
+    if (!Element.prototype.matches) return;
+    if (document.querySelector(':contains')) return;
+    document.querySelectorAll = (function(qsa) {
+        return function(selectors) {
+            if (selectors.includes(':contains')) {
+                const match = /(.+):contains\(["'](.+)["']\)/.exec(selectors);
+                if (match) {
+                    const els = qsa.call(document, match[1]);
+                    return Array.from(els).filter(el => el.textContent.includes(match[2]));
+                }
+            }
+            return qsa.call(document, selectors);
+        };
+    })(document.querySelectorAll);
+})();
     

@@ -57,24 +57,50 @@ class TicketClassifier:
         # Données d'exemple pour l'initialisation
         sample_data = {
             'text': [
+                # Support Technique
                 "Mon ordinateur ne démarre plus",
-                "Je ne peux pas me connecter à l'application",
-                "L'application plante quand je clique sur ce bouton",
-                "Comment puis-je changer mon mot de passe?",
-                "Je voudrais une nouvelle fonctionnalité pour exporter les données",
                 "Le système est très lent aujourd'hui",
+                "Impossible d'installer une imprimante",
+                # Assistance Générale
                 "Pouvez-vous m'aider à comprendre cette fonction?",
-                "Je veux demander un remboursement"
+                "J'ai besoin d'aide pour utiliser le portail RH",
+                # Demande de Fonctionnalité
+                "Je voudrais une nouvelle fonctionnalité pour exporter les données",
+                "Serait-il possible d'ajouter un bouton de tri?",
+                # Signalement de Bug
+                "L'application plante quand je clique sur ce bouton",
+                "Word plante dès que j'ouvre un fichier.",
+                # Question sur l'Utilisation
+                "Comment puis-je changer mon mot de passe?",
+                "Comment accéder à mes anciennes demandes?",
+                # Problème d'Accès / Connexion
+                "Je ne peux pas me connecter à l'application",
+                "Erreur de connexion à distance.",
+                # Demande de Remboursement
+                "Je veux demander un remboursement",
+                "Comment obtenir un remboursement pour mon achat?",
+                # Autre
+                "Message étrange à l'ouverture du logiciel",
+                "Je souhaite signaler un problème non listé"
             ],
             'category': [
                 "Support Technique",
-                "Problème de Connexion", 
-                "Bug Report",
-                "Question sur l'Utilisation",
-                "Demande de Fonctionnalité",
                 "Support Technique",
+                "Support Technique",
+                "Assistance Générale",
+                "Assistance Générale",
+                "Demande de Fonctionnalité",
+                "Demande de Fonctionnalité",
+                "Signalement de Bug",
+                "Signalement de Bug",
                 "Question sur l'Utilisation",
-                "Demande de Remboursement"
+                "Question sur l'Utilisation",
+                "Problème d'Accès / Connexion",
+                "Problème d'Accès / Connexion",
+                "Demande de Remboursement",
+                "Demande de Remboursement",
+                "Autre",
+                "Autre"
             ]
         }
         

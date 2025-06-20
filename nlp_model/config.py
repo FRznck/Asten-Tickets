@@ -16,9 +16,12 @@ class Config:
     # Catégories de tickets
     TICKET_CATEGORIES = [
         "Support Technique",
-        "Assistance Générale", 
+        "Assistance Générale",
         "Demande de Fonctionnalité",
-        "Bug Report",
+        "Signalement de Bug",
+        "Question sur l'Utilisation",
+        "Problème d'Accès / Connexion",
+        "Demande de Remboursement",
         "Autre"
     ]
     

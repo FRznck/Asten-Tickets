@@ -57,9 +57,11 @@
                                 📝
                             </div>
                         </div>
-                        <div class="stat-value">247</div>
+                        <div class="stat-value"><span id="stat-today"></span></div>
                         <div class="stat-change change-positive">
-                            ↗️ +12% vs hier
+                            <div>
+                                <span id="nbTicketsResolu">0</span>
+                            </div>  
                         </div>
                     </div>
 
@@ -70,7 +72,7 @@
                                 🎯
                             </div>
                         </div>
-                        <div class="stat-value">94.2%</div>
+                        <div class="stat-value"><span id="stat-precision"></span></div>
                         <div class="stat-change change-positive">
                             ↗️ +2.1% ce mois
                         </div>
@@ -83,7 +85,7 @@
                                 ⏱️
                             </div>
                         </div>
-                        <div class="stat-value">2.3min</div>
+                        <div class="stat-value"><span id="stat-temps"></span></div>
                         <div class="stat-change change-negative">
                             ↘️ -18% vs semaine dernière
                         </div>
@@ -91,14 +93,16 @@
 
                     <div class="stat-card">
                         <div class="stat-header">
-                            <div class="stat-title">Tickets en Attente</div>
+                            <div class="stat-title">Tickets en Cours</div>
                             <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white;">
                                 ⏳
                             </div>
                         </div>
-                        <div class="stat-value">15</div>
+                        <div class="stat-value"><span id="stat-attente"></span></div>
                         <div class="stat-change change-positive">
-                            ↗️ -8 depuis ce matin
+                            <div>
+                                <span id="nbTicketsEnCours">0</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -268,7 +272,8 @@
                     </div>
                 </div>
             </div>
-        </div>
+
+           
     </main>
 
     <!-- Modal pour les détails des tickets -->
@@ -315,6 +320,8 @@
             </form>
         </div>
     </div>
+
+
 
     <!-- Toast notifications -->
     <div id="toast" class="toast"></div>

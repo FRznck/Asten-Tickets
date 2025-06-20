@@ -1,5 +1,5 @@
 import { db } from "./firebase-init.js";
-import { collection, getDocs, query, orderBy, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { collection, getDocs, query, orderBy, doc, updateDoc, where, getCountFromServer } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
 let tickets = [];
 
@@ -206,4 +206,39 @@ export async function changeTicketStatus(ticketId) {
             }, 3000);
         }
     }
-} 
+}
+
+// Fonction pour compter les tickets "resolu"
+export async function compterTicketsResolu() {
+    try {
+        const ticketsRef = collection(db, "tickets");
+        const q = query(ticketsRef, where("statut", "==", "resolu"));
+        const snapshot = await getCountFromServer(q);
+        return snapshot.data().count;
+    } catch (error) {
+        console.error("Erreur lors du comptage des tickets résolus:", error);
+        return 0;
+    }
+}
+
+export async function compterTicketsEnCours() {
+    try {
+        const ticketsRef = collection(db, "tickets");
+        const q = query(ticketsRef, where("statut", "==", "en-cours"));
+        const snapshot = await getCountFromServer(q);
+        return snapshot.data().count;
+    } catch (error) {
+        console.error("Erreur lors du comptage des tickets en cours:", error);
+        return 0;
+    }
+}
+
+window.addEventListener('DOMContentLoaded', async () => {
+    const nbTicketsEnCours = await compterTicketsResolu();
+    document.getElementById('nbTicketsResolu').textContent = nbTicketsEnCours;
+}); 
+
+window.addEventListener('DOMContentLoaded', async () => {
+    const nbTicketsEnCours = await compterTicketsEnCours();
+    document.getElementById('nbTicketsEnCours').textContent = nbTicketsEnCours;
+}); 
