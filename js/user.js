@@ -188,6 +188,17 @@ async function validateModification() {
             date_modification: Timestamp.now()
         });
 
+        // Sauvegarder la correction dans la collection "corrections"
+        const user = auth.currentUser;
+        await addDoc(collection(db, "corrections"), {
+            ticket_id: ticketToUpdate.id,
+            utilisateur_id: user ? user.uid : "",
+            ancienne_categorie_id: currentTicket ? currentTicket.predicted_category : "",
+            nouvelle_categorie_id: newCategory,
+            date_correction: Timestamp.now(),
+            commentaire: ""
+        });
+
         // Sauvegarder le feedback pour l'amélioration du modèle
         if (currentTicket && currentTicket.predicted_category !== newCategory) {
             await saveFeedback(

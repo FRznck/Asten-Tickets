@@ -36,3 +36,8 @@ La collection modeles n'est pas là pour stocker les tickets, mais pour suivre l
 
 En résumé
 Le système que nous avons construit est non seulement parfaitement adapté à notre projet, mais il est conçu pour évoluer et devenir de plus en plus intelligent en apprenant de nos données réelles. Ce qui est un véritable atout pour l'app.
+
+
+pour lancer un entrainement manuel :  curl -X POST http://localhost:8000/retrain
+pour lancer l'api :  uvicorn api_server:app --host 0.0.0.0 --port 8000 --reload --log-level debug  ou uvicorn api_server:app --reload
+ 
