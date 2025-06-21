@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Initialisation Notifications - Asten Tickets</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+        .step {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .step-number {
+            background: #007bff;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        .status {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .logs {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .warning-box h4 {
+            margin-top: 0;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔔 Initialisation du Système de Notifications</h1>
+            <p>Cette page vous guide pour initialiser le système de notifications d'Asten Tickets</p>
+        </div>
+
+        <div class="warning-box">
+            <h4>⚠️ Important</h4>
+            <p>Cette initialisation ne doit être effectuée qu'une seule fois. Elle créera la collection <code>notifications</code> dans votre base de données Firestore avec des données d'exemple.</p>
+        </div>
+
+        <div class="step">
+            <h3>
+                <span class="step-number">1</span>
+                Vérification de l'état actuel
+            </h3>
+            <p>Vérifiez si la collection notifications existe déjà et contient des données.</p>
+            <button class="btn" onclick="verifierEtat()">🔍 Vérifier l'état</button>
+            <div id="verificationStatus" class="status" style="display: none;"></div>
+        </div>
+
+        <div class="step">
+            <h3>
+                <span class="step-number">2</span>
+                Initialisation du système
+            </h3>
+            <p>Créez la collection notifications avec des données d'exemple pour tester le système.</p>
+            <button class="btn" id="initBtn" onclick="initialiserSysteme()" disabled>🚀 Initialiser le système</button>
+            <div id="initialisationStatus" class="status" style="display: none;"></div>
+        </div>
+
+        <div class="step">
+            <h3>
+                <span class="step-number">3</span>
+                Test du système
+            </h3>
+            <p>Testez que le système fonctionne correctement en créant une notification de test.</p>
+            <button class="btn" id="testBtn" onclick="testerSysteme()" disabled>🧪 Tester le système</button>
+            <div id="testStatus" class="status" style="display: none;"></div>
+        </div>
+
+        <div class="step">
+            <h3>
+                <span class="step-number">4</span>
+                Nettoyage (optionnel)
+            </h3>
+            <p>Nettoyez la collection notifications (uniquement pour les tests).</p>
+            <button class="btn btn-warning" onclick="nettoyerCollection()">🧹 Nettoyer la collection</button>
+            <div id="nettoyageStatus" class="status" style="display: none;"></div>
+        </div>
+
+        <div class="logs" id="logs">
+            <div>🚀 Page d'initialisation chargée</div>
+            <div>📋 Prêt pour l'initialisation...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { 
+            initialiserSystemeNotifications,
+            verifierCollectionNotifications,
+            nettoyerCollectionNotifications
+        } from './js/init-notifications.js';
+        
+        import { 
+            creerNotification,
+            TYPES_NOTIFICATIONS,
+            PRIORITES
+        } from './js/notifications-manager.js';
+        
+        import { auth } from './js/firebase-init.js';
+
+        let currentUser = null;
+
+        // Initialisation
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                addLog(`✅ Utilisateur connecté: ${user.email}`);
+            } else {
+                addLog(`❌ Aucun utilisateur connecté`);
+            }
+        });
+
+        // Fonction utilitaire pour ajouter des logs
+        function addLog(message) {
+            const logsDiv = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            logsDiv.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        // Fonction utilitaire pour afficher le statut
+        function showStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+            element.style.display = 'block';
+        }
+
+        // Étape 1: Vérification
+        window.verifierEtat = async function() {
+            addLog("🔍 Vérification de l'état de la collection notifications...");
+            
+            try {
+                const result = await verifierCollectionNotifications();
+                
+                if (result.exists) {
+                    if (result.needsInit) {
+                        showStatus('verificationStatus', `📝 Collection vide (${result.count} documents). Initialisation nécessaire.`, 'warning');
+                        document.getElementById('initBtn').disabled = false;
+                        addLog(`📝 Collection vide, initialisation nécessaire`);
+                    } else {
+                        showStatus('verificationStatus', `✅ Collection déjà initialisée (${result.count} documents).`, 'success');
+                        document.getElementById('testBtn').disabled = false;
+                        addLog(`✅ Collection déjà initialisée avec ${result.count} documents`);
+                    }
+                } else {
+                    showStatus('verificationStatus', `❌ Collection non accessible: ${result.error}`, 'error');
+                    addLog(`❌ Collection non accessible: ${result.error}`);
+                }
+            } catch (error) {
+                showStatus('verificationStatus', `❌ Erreur lors de la vérification: ${error.message}`, 'error');
+                addLog(`❌ Erreur: ${error.message}`);
+            }
+        };
+
+        // Étape 2: Initialisation
+        window.initialiserSysteme = async function() {
+            addLog("🚀 Initialisation du système de notifications...");
+            
+            try {
+                const result = await initialiserSystemeNotifications();
+                
+                if (result.success) {
+                    if (result.created) {
+                        showStatus('initialisationStatus', `✅ Initialisation réussie: ${result.created} notifications créées.`, 'success');
+                        document.getElementById('testBtn').disabled = false;
+                        addLog(`✅ Initialisation réussie: ${result.created} notifications créées`);
+                    } else {
+                        showStatus('initialisationStatus', `ℹ️ ${result.message}`, 'info');
+                        document.getElementById('testBtn').disabled = false;
+                        addLog(`ℹ️ ${result.message}`);
+                    }
+                } else {
+                    showStatus('initialisationStatus', `❌ Erreur lors de l'initialisation: ${result.error}`, 'error');
+                    addLog(`❌ Erreur: ${result.error}`);
+                }
+            } catch (error) {
+                showStatus('initialisationStatus', `❌ Erreur: ${error.message}`, 'error');
+                addLog(`❌ Erreur: ${error.message}`);
+            }
+        };
+
+        // Étape 3: Test
+        window.testerSysteme = async function() {
+            if (!currentUser) {
+                showStatus('testStatus', '❌ Utilisateur non connecté', 'error');
+                addLog('❌ Utilisateur non connecté');
+                return;
+            }
+
+            addLog("🧪 Test de création d'une notification...");
+            
+            try {
+                const notification = {
+                    titre: "Test du système de notifications",
+                    message: "Cette notification a été créée pour tester le système.",
+                    type: TYPES_NOTIFICATIONS.MESSAGE_GENERAL,
+                    priorite: PRIORITES.NORMALE,
+                    destinataire_id: currentUser.uid,
+                    entite_type: "test",
+                    entite_id: "test_001",
+                    lien_action: "/test-notifications.html",
+                    donnees_extra: {
+                        test_type: "initialisation",
+                        timestamp: new Date().toISOString()
+                    },
+                    cree_par: currentUser.uid,
+                    cree_par_type: "utilisateur"
+                };
+
+                const result = await creerNotification(notification);
+                showStatus('testStatus', `✅ Test réussi: notification créée avec l'ID ${result.id}`, 'success');
+                addLog(`✅ Test réussi: notification créée (${result.id})`);
+            } catch (error) {
+                showStatus('testStatus', `❌ Erreur lors du test: ${error.message}`, 'error');
+                addLog(`❌ Erreur test: ${error.message}`);
+            }
+        };
+
+        // Étape 4: Nettoyage
+        window.nettoyerCollection = async function() {
+            if (!confirm('⚠️ Êtes-vous sûr de vouloir supprimer toutes les notifications ? Cette action est irréversible.')) {
+                return;
+            }
+
+            addLog("🧹 Nettoyage de la collection notifications...");
+            
+            try {
+                const result = await nettoyerCollectionNotifications();
+                
+                if (result.success) {
+                    showStatus('nettoyageStatus', `✅ Nettoyage réussi: ${result.deleted} notifications supprimées.`, 'success');
+                    document.getElementById('initBtn').disabled = false;
+                    document.getElementById('testBtn').disabled = true;
+                    addLog(`✅ Nettoyage réussi: ${result.deleted} notifications supprimées`);
+                } else {
+                    showStatus('nettoyageStatus', `❌ Erreur lors du nettoyage: ${result.error}`, 'error');
+                    addLog(`❌ Erreur nettoyage: ${result.error}`);
+                }
+            } catch (error) {
+                showStatus('nettoyageStatus', `❌ Erreur: ${error.message}`, 'error');
+                addLog(`❌ Erreur: ${error.message}`);
+            }
+        };
+
+        // Initialisation automatique
+        addLog("📋 Page d'initialisation des notifications chargée");
+        addLog("💡 Cliquez sur 'Vérifier l'état' pour commencer");
+    </script>
+</body>
+</html> 

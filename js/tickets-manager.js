@@ -1,6 +1,9 @@
 import { db } from "./firebase-init.js";
 import { collection, getDocs, query, orderBy, doc, updateDoc, where, getCountFromServer, addDoc, Timestamp, limit } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
+// Import des notifications
+import { notifierAssignationTicket, notifierModificationStatut } from './notifications-manager.js';
+
 let tickets = [];
 let assignations = [];
 let currentPage = 1;
@@ -143,6 +146,18 @@ export async function assignerTicket(ticketId, assigneA, equipe = null, commenta
         };
 
         const assignationRef = await addDoc(collection(db, "assignations"), nouvelleAssignation);
+
+        // Notifier l'assignation du ticket
+        const ticket = tickets.find(t => t.id === ticketId);
+        if (ticket) {
+            const ticketData = {
+                id: ticketId,
+                titre: ticket.title,
+                categorie: ticket.category,
+                equipe: equipe
+            };
+            await notifierAssignationTicket(ticketData, assigneA, "admin");
+        }
 
         // On recharge les données pour que l'interface soit à jour.
         await chargerAssignations();
@@ -460,8 +475,19 @@ export async function changeTicketStatus(ticketId) {
         const ticket = tickets.find(t => t.id === ticketId);
         if (!ticket) return;
 
+        const ancienStatut = ticket.status;
         const newStatus = getNextStatus(ticket.status);
+        
         await updateTicketStatus(ticketId, newStatus);
+        
+        // Notifier le changement de statut
+        const ticketData = {
+            id: ticketId,
+            titre: ticket.title,
+            categorie: ticket.category
+        };
+        await notifierModificationStatut(ticketData, ancienStatut, newStatus, ticket.email);
+        
         renderTicketsTable();
         
         // C'est toujours bien de donner un retour visuel à l'utilisateur.

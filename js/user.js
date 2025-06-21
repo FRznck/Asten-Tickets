@@ -6,6 +6,9 @@ import {
 
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 
+// Import des notifications
+import { notifierCreationTicket } from './notifications-manager.js';
+
 let currentTicket = null;
 let tickets = [];
 
@@ -104,6 +107,15 @@ document.getElementById('ticketForm').addEventListener('submit', async function 
             needs_human_review: prediction.needs_human_review,
             keywords: prediction.keywords || []
         });
+
+        // Notifier la création du ticket
+        const ticketData = {
+            id: docRef.id,
+            titre: title,
+            categorie: prediction.predicted_category,
+            statut: "Nouveau"
+        };
+        await notifierCreationTicket(ticketData, user.uid);
 
         showToast('Ticket soumis avec succès !');
         this.reset();
