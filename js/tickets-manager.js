@@ -44,11 +44,24 @@ export async function chargerTickets() {
         const querySnapshot = await getDocs(q);
         
         tickets = [];
+        
+        // Récupérer tous les utilisateurs pour éviter les requêtes multiples
+        const usersRef = collection(db, "utilisateur");
+        const usersSnapshot = await getDocs(usersRef);
+        const users = {};
+        usersSnapshot.forEach((doc) => {
+            const userData = doc.data();
+            users[doc.id] = userData;
+        });
+        
         querySnapshot.forEach((doc) => {
             const ticket = doc.data();
             
             // Trouver l'assignation active pour ce ticket
             const assignation = assignations.find(a => a.ticket_id === doc.id);
+            
+            // Récupérer les informations de l'utilisateur
+            const userInfo = users[ticket.utilisateur] || {};
             
             tickets.push({
                 id: doc.id,
@@ -58,6 +71,8 @@ export async function chargerTickets() {
                 date: ticket.dateSoumission.toDate(),
                 description: ticket.description,
                 email: ticket.utilisateur,
+                userEmail: userInfo.email || 'Email non disponible',
+                userName: userInfo.nom || 'Nom non disponible',
                 confidence: ticket.confidence || 0,
                 // Informations d'assignation
                 assigne_a: assignation ? assignation.assigne_a : null,
@@ -214,6 +229,8 @@ export function renderTicketsTable(searchTerm = '') {
             ticket.title.toLowerCase().includes(searchTerm) ||
             ticket.id.toLowerCase().includes(searchTerm) ||
             ticket.category.toLowerCase().includes(searchTerm) ||
+            ticket.userName.toLowerCase().includes(searchTerm) ||
+            ticket.userEmail.toLowerCase().includes(searchTerm) ||
             (ticket.equipe && ticket.equipe.toLowerCase().includes(searchTerm))
           )
         : tickets;
@@ -221,7 +238,7 @@ export function renderTicketsTable(searchTerm = '') {
     if (filteredTickets.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="9" class="no-tickets">
+                <td colspan="10" class="no-tickets">
                     Aucun ticket trouvé
                 </td>
             </tr>
@@ -236,6 +253,12 @@ export function renderTicketsTable(searchTerm = '') {
             <td><span class="ticket-status status-${ticket.status}">${getStatusLabel(ticket.status)}</span></td>
             <td><span class="category-tag cat-${ticket.category}">${getCategoryLabel(ticket.category)}</span></td>
             <td>${formatDate(ticket.date)}</td>
+            <td>
+                <div class="user-info">
+                    <div class="user-name">${ticket.userName}</div>
+                    <div class="user-email">${ticket.userEmail}</div>
+                </div>
+            </td>
             <td>
                 ${ticket.equipe ? 
                     `<span class="equipe-tag">${getEquipeLabel(ticket.equipe)}</span>` : 
@@ -340,7 +363,7 @@ export function viewTicket(ticketId) {
                     <p><strong>Statut :</strong> <span class="ticket-status status-${ticket.status}">${getStatusLabel(ticket.status)}</span></p>
                     <p><strong>Catégorie :</strong> <span class="category-tag cat-${ticket.category}">${getCategoryLabel(ticket.category)}</span></p>
                     <p><strong>Date de création :</strong> ${formatDate(ticket.date)}</p>
-                    <p><strong>ID Utilisateur :</strong> ${ticket.email}</p>
+                    <p><strong>Utilisateur :</strong> ${ticket.userName} (${ticket.userEmail})</p>
                     ${assignationInfo}
                     <p><strong>Description du ticket :</strong></p>
                     <div class="ticket-description">${ticket.description}</div>

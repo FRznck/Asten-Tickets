@@ -810,14 +810,30 @@
         }
 
         .non-assigne {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
             background: #f3f4f6;
             color: #6b7280;
-            border: 1px dashed #d1d5db;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .user-email {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-style: italic;
         }
 
         .btn-success {

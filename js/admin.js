@@ -303,10 +303,11 @@ document.getElementById('manageCategoriesBtn').addEventListener('click', () => {
 
 // Export functionality
 document.querySelectorAll('.settings-card button').forEach(btn => {
-    if (btn.textContent.includes('CSV') || btn.textContent.includes('Excel') || btn.textContent.includes('PDF')) {
+    const buttonText = btn.textContent.trim();
+    if (buttonText.includes('CSV') || buttonText.includes('Excel') || buttonText.includes('PDF')) {
         btn.addEventListener('click', (e) => {
-            const format = e.target.textContent.includes('CSV') ? 'CSV' : 
-                          e.target.textContent.includes('Excel') ? 'Excel' : 'PDF';
+            const format = buttonText.includes('CSV') ? 'CSV' : 
+                          (buttonText.includes('Excel') ? 'Excel' : 'PDF');
             showToast(`Export ${format} en cours...`, 'success');
         });
     }
