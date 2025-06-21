@@ -55,7 +55,7 @@ export async function chargerTickets() {
                 title: ticket.titre,
                 status: ticket.statut,
                 category: ticket.categorie,
-                date: ticket.dateSoumission.toDate().toISOString().split('T')[0],
+                date: ticket.dateSoumission.toDate(),
                 description: ticket.description,
                 email: ticket.utilisateur,
                 confidence: ticket.confidence || 0,
@@ -286,9 +286,25 @@ function getEquipeLabel(equipeId) {
     return equipe ? equipe.nom : equipeId;
 }
 
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR');
+function formatDate(date) {
+    if (!date) return 'Non spécifié';
+    
+    // Si c'est un Timestamp Firestore, le convertir en Date
+    if (date && typeof date.toDate === 'function') {
+        date = date.toDate();
+    }
+    
+    // Si c'est une chaîne de caractères, la convertir en Date
+    if (typeof date === 'string') {
+        date = new Date(date);
+    }
+    
+    // Vérifier que c'est bien un objet Date valide
+    if (!(date instanceof Date) || isNaN(date.getTime())) {
+        return 'Date invalide';
+    }
+    
+    return date.toLocaleString('fr-FR');
 }
 
 // Fonction pour afficher les détails d'un ticket
@@ -307,7 +323,7 @@ export function viewTicket(ticketId) {
         <p><strong>Équipe assignée :</strong> <span class="equipe-tag">${getEquipeLabel(ticket.equipe)}</span></p>
         <p><strong>Assigné à :</strong> ${ticket.assigne_a || 'Non spécifié'}</p>
         <p><strong>Assigné par :</strong> ${ticket.assigne_par || 'Non spécifié'}</p>
-        ${ticket.date_assignation ? `<p><strong>Date d'assignation :</strong> ${formatDate(ticket.date_assignation.toDate())}</p>` : ''}
+        ${ticket.date_assignation ? `<p><strong>Date d'assignation :</strong> ${formatDate(ticket.date_assignation)}</p>` : ''}
         ${ticket.commentaire_assignation ? `<p><strong>Commentaire pour l'équipe :</strong> ${ticket.commentaire_assignation}</p>` : ''}
     ` : '<p><strong>Assignation :</strong> <span class="non-assigne">Non assigné</span></p>';
 
