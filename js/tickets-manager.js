@@ -308,7 +308,7 @@ export function viewTicket(ticketId) {
         <p><strong>Assigné à :</strong> ${ticket.assigne_a || 'Non spécifié'}</p>
         <p><strong>Assigné par :</strong> ${ticket.assigne_par || 'Non spécifié'}</p>
         ${ticket.date_assignation ? `<p><strong>Date d'assignation :</strong> ${formatDate(ticket.date_assignation.toDate())}</p>` : ''}
-        ${ticket.commentaire_assignation ? `<p><strong>Commentaire :</strong> ${ticket.commentaire_assignation}</p>` : ''}
+        ${ticket.commentaire_assignation ? `<p><strong>Commentaire pour l'équipe :</strong> ${ticket.commentaire_assignation}</p>` : ''}
     ` : '<p><strong>Assignation :</strong> <span class="non-assigne">Non assigné</span></p>';
 
     // Mettre à jour le contenu du modal
@@ -326,7 +326,7 @@ export function viewTicket(ticketId) {
                     <p><strong>Date de création :</strong> ${formatDate(ticket.date)}</p>
                     <p><strong>ID Utilisateur :</strong> ${ticket.email}</p>
                     ${assignationInfo}
-                    <p><strong>Description :</strong></p>
+                    <p><strong>Description du ticket :</strong></p>
                     <div class="ticket-description">${ticket.description}</div>
                 </div>
             </div>
