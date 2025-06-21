@@ -1,7 +1,8 @@
-import { chargerTickets, renderTicketsTable, viewTicket, changeTicketStatus, compterTicketsResolu } from './tickets-manager.js';
+import { chargerTickets, renderTicketsTable, viewTicket, changeTicketStatus, compterTicketsResolu, compterTicketsParCategorie, compterTicketsParNiveauDeConfiance, assignerTicketModal, confirmerAssignation, updateMembresOptions } from './tickets-manager.js';
 
 // Application State
 let currentTab = 'dashboard';
+let classificationsChart, categoriesChart, confidenceChart;
 
 // DOM Elements
 const navTabs = document.querySelectorAll('.nav-tab');
@@ -108,8 +109,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         showToast("Erreur lors du chargement des tickets", "error");
     }
     
-    initializeCharts();
     await updateDashboardStats();
+    initializeCharts();
 
     const nbTicketsResolu = await compterTicketsResolu();
     document.getElementById('nbTicketsResolu').textContent = nbTicketsResolu;
@@ -129,13 +130,27 @@ function showToast(message, type = 'success') {
 // Rendre viewTicket et changeTicketStatus accessibles globalement
 window.viewTicket = viewTicket;
 window.changeTicketStatus = changeTicketStatus;
+window.assignerTicketModal = assignerTicketModal;
+window.confirmerAssignation = confirmerAssignation;
+window.updateMembresOptions = updateMembresOptions;
 
 // Chart initialization
-function initializeCharts() {
+async function initializeCharts() {
+    // Destroy existing charts if they exist
+    if (classificationsChart) {
+        classificationsChart.destroy();
+    }
+    if (categoriesChart) {
+        categoriesChart.destroy();
+    }
+    if (confidenceChart) {
+        confidenceChart.destroy();
+    }
+
     // Classifications evolution chart
     const ctx1 = document.getElementById('classificationsChart');
     if (ctx1) {
-        new Chart(ctx1, {
+        classificationsChart = new Chart(ctx1, {
             type: 'line',
             data: {
                 labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
@@ -160,20 +175,30 @@ function initializeCharts() {
         });
     }
 
-    // Categories distribution
+    // Categories distribution - Utiliser les vraies données
     const ctx2 = document.getElementById('categoriesChart');
     if (ctx2) {
-        new Chart(ctx2, {
+        // Récupérer les vraies données de catégories
+        const categoriesData = await compterTicketsParCategorie();
+        
+        const labels = Object.keys(categoriesData);
+        const data = Object.values(categoriesData);
+        
+        categoriesChart = new Chart(ctx2, {
             type: 'doughnut',
             data: {
-                labels: ['Technique', 'Facturation', 'Support', 'Autre'],
+                labels: labels,
                 datasets: [{
-                    data: [45, 25, 20, 10],
+                    data: data,
                     backgroundColor: [
                         '#0277bd',
                         '#7b1fa2',
                         '#2e7d32',
-                        '#f57c00'
+                        '#f57c00',
+                        '#c2185b',
+                        '#0288d1',
+                        '#8e24aa',
+                        '#fbc02d'
                     ]
                 }]
             },
@@ -191,12 +216,16 @@ function initializeCharts() {
     // Confidence levels
     const ctx3 = document.getElementById('confidenceChart');
     if (ctx3) {
-        new Chart(ctx3, {
+        const confidenceData = compterTicketsParNiveauDeConfiance();
+        const labels = Object.keys(confidenceData);
+        const data = Object.values(confidenceData);
+
+        confidenceChart = new Chart(ctx3, {
             type: 'doughnut',
             data: {
-                labels: ['Haute (90%+)', 'Moyenne (70-89%)', 'Faible (<70%)'],
+                labels: labels,
                 datasets: [{
-                    data: [60, 30, 10],
+                    data: data,
                     backgroundColor: [
                         '#22c55e',
                         '#f59e0b',
@@ -346,6 +375,59 @@ async function updateDashboardStats() {
         } else {
             elTempsMoyen.textContent = '--';
         }
+    }
+    
+    // Mettre à jour le graphique des catégories avec les vraies données
+    await updateCategoriesChart();
+}
+
+// Nouvelle fonction pour mettre à jour le graphique des catégories
+async function updateCategoriesChart() {
+    const ctx2 = document.getElementById('categoriesChart');
+    if (!ctx2) return;
+    
+    try {
+        // Récupérer les vraies données de catégories
+        const categoriesData = await compterTicketsParCategorie();
+        
+        const labels = Object.keys(categoriesData);
+        const data = Object.values(categoriesData);
+        
+        // Détruire le graphique existant s'il existe
+        if (categoriesChart) {
+            categoriesChart.destroy();
+        }
+        
+        // Créer le nouveau graphique
+        categoriesChart = new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: [
+                        '#0277bd',
+                        '#7b1fa2',
+                        '#2e7d32',
+                        '#f57c00',
+                        '#c2185b',
+                        '#0288d1',
+                        '#8e24aa',
+                        '#fbc02d'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour du graphique des catégories:', error);
     }
 }
 

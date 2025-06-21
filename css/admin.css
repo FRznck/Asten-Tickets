@@ -797,4 +797,58 @@
         .ticket-actions .btn-primary:hover {
             background-color: #1d4ed8;
         }
+
+        /* Styles pour les assignations */
+        .equipe-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .non-assigne {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            background: #f3f4f6;
+            color: #6b7280;
+            border: 1px dashed #d1d5db;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-success:hover {
+            background: #16a34a;
+            transform: translateY(-1px);
+        }
+
+        .ticket-info {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .ticket-info p {
+            margin-bottom: 0.5rem;
+        }
+
+        .ticket-info p:last-child {
+            margin-bottom: 0;
+        }
     

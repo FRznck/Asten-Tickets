@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Assignation Tickets - Asten</title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Test des Fonctionnalités d'Assignation</h1>
+        
+        <div class="test-section">
+            <h2>Test des Équipes</h2>
+            <button onclick="testEquipes()" class="btn btn-primary">Tester les Équipes</button>
+            <div id="equipesResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Test des Membres d'Équipe</h2>
+            <select id="equipeSelect" onchange="testMembres()">
+                <option value="">Sélectionner une équipe</option>
+                <option value="support_technique">Support Technique</option>
+                <option value="support_general">Support Général</option>
+                <option value="facturation">Facturation</option>
+                <option value="developpement">Développement</option>
+                <option value="administration">Administration</option>
+            </select>
+            <div id="membresResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Test de Chargement des Tickets</h2>
+            <button onclick="testChargementTickets()" class="btn btn-primary">Charger les Tickets</button>
+            <div id="ticketsResult"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { getEquipesDisponibles, getMembresEquipe, chargerTickets } from '/js/tickets-manager.js';
+
+        window.testEquipes = function() {
+            const equipes = getEquipesDisponibles();
+            const resultDiv = document.getElementById('equipesResult');
+            resultDiv.innerHTML = '<h3>Équipes disponibles :</h3><ul>' + 
+                equipes.map(equipe => `<li><strong>${equipe.nom}</strong> - ${equipe.description}</li>`).join('') + 
+                '</ul>';
+        };
+
+        window.testMembres = function() {
+            const equipeId = document.getElementById('equipeSelect').value;
+            if (!equipeId) return;
+            
+            const membres = getMembresEquipe(equipeId);
+            const resultDiv = document.getElementById('membresResult');
+            resultDiv.innerHTML = '<h3>Membres de l\'équipe :</h3><ul>' + 
+                membres.map(membre => `<li>${membre.nom} (${membre.email})</li>`).join('') + 
+                '</ul>';
+        };
+
+        window.testChargementTickets = async function() {
+            try {
+                const tickets = await chargerTickets();
+                const resultDiv = document.getElementById('ticketsResult');
+                resultDiv.innerHTML = '<h3>Tickets chargés :</h3><ul>' + 
+                    tickets.map(ticket => `
+                        <li>
+                            <strong>${ticket.title}</strong> - ${ticket.status}
+                            ${ticket.equipe ? ` (Assigné à: ${ticket.equipe})` : ' (Non assigné)'}
+                        </li>
+                    `).join('') + 
+                    '</ul>';
+            } catch (error) {
+                console.error('Erreur lors du test:', error);
+                document.getElementById('ticketsResult').innerHTML = '<p style="color: red;">Erreur: ' + error.message + '</p>';
+            }
+        };
+    </script>
+</body>
+</html> 
