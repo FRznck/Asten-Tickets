@@ -49,6 +49,7 @@ function switchTab(tabId) {
         }
     });
 
+
     // Update active content
     tabContents.forEach(content => {
         content.classList.remove('active');

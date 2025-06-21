@@ -1,6 +1,8 @@
 import { db } from "./firebase-init.js";
 import { collection, getDocs, query, orderBy, doc, updateDoc, where, getCountFromServer, addDoc, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
-
+import { 
+    getDoc 
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 let tickets = [];
 let assignations = [];
 
@@ -33,21 +35,38 @@ async function chargerAssignations() {
     }
 }
 
-// Fonction pour charger les tickets depuis Firestore avec leurs assignations
 export async function chargerTickets() {
     try {
-        // Charger les assignations en premier
         await chargerAssignations();
-        
         const ticketsRef = collection(db, "tickets");
         const q = query(ticketsRef, orderBy("dateSoumission", "desc"));
         const querySnapshot = await getDocs(q);
         
         tickets = [];
-        querySnapshot.forEach((doc) => {
+        
+        for (const doc of querySnapshot.docs) {
             const ticket = doc.data();
             
-            // Trouver l'assignation active pour ce ticket
+            // Récupérer les infos utilisateur à partir de l'ID
+            let userInfo = { nom: "Utilisateur inconnu", email: "" };
+            try {
+                // Vérifier que ticket.utilisateur est bien un ID valide
+                if (ticket.utilisateur && typeof ticket.utilisateur === "string") {
+                    const userDoc = await getDoc(doc(db, "users", ticket.utilisateur));
+                    if (userDoc.exists()) {
+                        userInfo = {
+                            nom: userDoc.data().displayName || "Utilisateur inconnu",
+                            email: userDoc.data().email || ""
+                        };
+                    } else {
+                        console.warn("Document utilisateur non trouvé pour ID:", ticket.utilisateur);
+                    }
+                }
+            } catch (userError) {
+                console.error("Erreur chargement utilisateur:", userError);
+            }
+
+            // Trouver l'assignation active
             const assignation = assignations.find(a => a.ticket_id === doc.id);
             
             tickets.push({
@@ -55,10 +74,13 @@ export async function chargerTickets() {
                 title: ticket.titre,
                 status: ticket.statut,
                 category: ticket.categorie,
-                date: ticket.dateSoumission.toDate().toISOString().split('T')[0],
+                date: ticket.dateSoumission, // Conserver le Timestamp original
                 description: ticket.description,
-                email: ticket.utilisateur,
                 confidence: ticket.confidence || 0,
+                // Informations utilisateur
+                userId: ticket.utilisateur,
+                userName: userInfo.nom,
+                userEmail: userInfo.email,
                 // Informations d'assignation
                 assigne_a: assignation ? assignation.assigne_a : null,
                 assigne_par: assignation ? assignation.assigne_par : null,
@@ -66,7 +88,7 @@ export async function chargerTickets() {
                 equipe: assignation ? assignation.equipe : null,
                 commentaire_assignation: assignation ? assignation.commentaire : ""
             });
-        });
+        }
         
         return tickets;
     } catch (error) {
@@ -74,7 +96,6 @@ export async function chargerTickets() {
         throw error;
     }
 }
-
 // Fonction pour mettre à jour le statut d'un ticket
 export async function updateTicketStatus(ticketId, newStatus) {
     try {
@@ -166,7 +187,7 @@ export function getEquipesDisponibles() {
     ];
 }
 
-// Fonction pour obtenir les membres d'une équipe 
+// Fonction pour obtenir les membres d'une équipe
 export function getMembresEquipe(equipeId) {
     const membresParEquipe = {
         "support_technique": [
@@ -259,7 +280,7 @@ export function renderTicketsTable(searchTerm = '') {
     `).join('');
 }
 
-// Fonctions utilitaires
+// Fonctions utiliteur
 function getStatusLabel(status) {
     const labels = {
         'nouveau': 'Nouveau',
@@ -292,6 +313,29 @@ function formatDate(dateString) {
 }
 
 // Fonction pour afficher les détails d'un ticket
+// Fonction pour formater les dates avec heure
+function formatDateTime(timestamp) {
+    if (!timestamp) return "N/A";
+    
+    try {
+        // Convertir le Timestamp Firebase en objet Date
+        const dateObj = timestamp.toDate();
+        
+        // Formater la date et l'heure
+        return dateObj.toLocaleString('fr-FR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch (e) {
+        console.error("Erreur formatage date:", e);
+        return "Date invalide";
+    }
+}
+
+// Fonction pour afficher les détails du ticket
 export function viewTicket(ticketId) {
     const ticket = tickets.find(t => t.id === ticketId);
     if (!ticket) return;
@@ -302,12 +346,19 @@ export function viewTicket(ticketId) {
         return;
     }
 
+    // Informations utilisateur
+    const userInfo = `
+        <p><strong>Nom :</strong> ${ticket.userName}</p>
+        <p><strong>Email :</strong> ${ticket.userEmail || "Non disponible"}</p>
+        <p><strong>ID Utilisateur :</strong> ${ticket.userId || "N/A"}</p>
+    `;
+
     // Informations d'assignation
     const assignationInfo = ticket.equipe ? `
         <p><strong>Équipe assignée :</strong> <span class="equipe-tag">${getEquipeLabel(ticket.equipe)}</span></p>
         <p><strong>Assigné à :</strong> ${ticket.assigne_a || 'Non spécifié'}</p>
         <p><strong>Assigné par :</strong> ${ticket.assigne_par || 'Non spécifié'}</p>
-        ${ticket.date_assignation ? `<p><strong>Date d'assignation :</strong> ${formatDate(ticket.date_assignation.toDate())}</p>` : ''}
+        ${ticket.date_assignation ? `<p><strong>Date d'assignation :</strong> ${formatDateTime(ticket.date_assignation)}</p>` : ''}
         ${ticket.commentaire_assignation ? `<p><strong>Commentaire :</strong> ${ticket.commentaire_assignation}</p>` : ''}
     ` : '<p><strong>Assignation :</strong> <span class="non-assigne">Non assigné</span></p>';
 
@@ -323,11 +374,28 @@ export function viewTicket(ticketId) {
                     <p><strong>ID Ticket :</strong> ${ticket.id}</p>
                     <p><strong>Statut :</strong> <span class="ticket-status status-${ticket.status}">${getStatusLabel(ticket.status)}</span></p>
                     <p><strong>Catégorie :</strong> <span class="category-tag cat-${ticket.category}">${getCategoryLabel(ticket.category)}</span></p>
-                    <p><strong>Date de création :</strong> ${formatDate(ticket.date)}</p>
-                    <p><strong>ID Utilisateur :</strong> ${ticket.email}</p>
-                    ${assignationInfo}
+                    <p><strong>Date de création :</strong> ${formatDateTime(ticket.date)}</p>
+                    ${ticket.date_modification ? `<p><strong>Dernière modification :</strong> ${formatDateTime(ticket.date_modification)}</p>` : ''}
+                    
+                    <div class="user-section">
+                        <h3>Informations Utilisateur</h3>
+                        ${userInfo}
+                    </div>
+                    
+                    <div class="assignation-section">
+                        <h3>Assignation</h3>
+                        ${assignationInfo}
+                    </div>
+                    
                     <p><strong>Description :</strong></p>
                     <div class="ticket-description">${ticket.description}</div>
+                    
+                    ${ticket.keywords?.length > 0 ? `
+                    <p><strong>Mots-clés :</strong></p>
+                    <div class="ticket-keywords">
+                        ${ticket.keywords.map(kw => `<span class="keyword-tag">${kw}</span>`).join('')}
+                    </div>
+                    ` : ''}
                 </div>
             </div>
             <div class="modal-footer">
@@ -341,7 +409,6 @@ export function viewTicket(ticketId) {
     
     modal.classList.add('active');
 }
-
 // Fonction pour changer le statut d'un ticket
 export async function changeTicketStatus(ticketId) {
     try {

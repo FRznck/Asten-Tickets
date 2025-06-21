@@ -15,4 +15,4 @@ echo.
 
 python run.py --mode full
 
-pause 
+pause
