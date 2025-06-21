@@ -138,7 +138,7 @@ function showPredictedCategory(prediction) {
         </div>
     `;
     
-    // Afficher les mots-clés si disponibles
+    // Afficher les mots-clés si existants
     let keywordsHtml = '';
     if (prediction.keywords && prediction.keywords.length > 0) {
         keywordsHtml = `

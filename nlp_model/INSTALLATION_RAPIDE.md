@@ -2,17 +2,7 @@
 
 ## ⚡ Démarrage en 5 minutes
 
-### 1. Prérequis
-- Python 3.8+ installé
-- Compte Firebase avec Firestore activé
 
-### 2. Configuration Firebase
-1. Allez sur [Firebase Console](https://console.firebase.google.com/)
-2. Créez un nouveau projet ou utilisez un existant
-3. Activez Firestore Database
-4. Dans Paramètres > Comptes de service, générez une nouvelle clé privée
-5. Renommez le fichier téléchargé en `firebase-credentials.json`
-6. Placez-le dans le dossier `nlp_model/`
 
 ### 3. Installation automatique (Windows)
 ```bash

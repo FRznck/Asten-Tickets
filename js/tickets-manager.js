@@ -1,10 +1,13 @@
 import { db } from "./firebase-init.js";
-import { collection, getDocs, query, orderBy, doc, updateDoc, where, getCountFromServer, addDoc, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { collection, getDocs, query, orderBy, doc, updateDoc, where, getCountFromServer, addDoc, Timestamp, limit } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
 let tickets = [];
 let assignations = [];
+let currentPage = 1;
+const TICKETS_PER_PAGE = 10; // On peut ajuster ce nombre pour afficher plus ou moins de tickets par page.
 
-// Fonction pour charger les assignations depuis Firestore
+// On récupère ici toutes les assignations "actives" depuis Firestore.
+// C'est utile pour savoir rapidement qui est sur quel ticket.
 async function chargerAssignations() {
     try {
         const assignationsRef = collection(db, "assignations");
@@ -33,10 +36,12 @@ async function chargerAssignations() {
     }
 }
 
-// Fonction pour charger les tickets depuis Firestore avec leurs assignations
+// C'est une des fonctions les plus importantes.
+// Elle charge tous les tickets et, pour chacun, elle va chercher les infos de l'utilisateur
+// qui l'a créé et l'assignation actuelle. Ça évite de faire plein de requêtes séparées plus tard.
 export async function chargerTickets() {
     try {
-        // Charger les assignations en premier
+        // On s'assure d'avoir les assignations à jour avant de traiter les tickets.
         await chargerAssignations();
         
         const ticketsRef = collection(db, "tickets");
@@ -57,10 +62,10 @@ export async function chargerTickets() {
         querySnapshot.forEach((doc) => {
             const ticket = doc.data();
             
-            // Trouver l'assignation active pour ce ticket
+            // On cherche si une assignation active existe pour ce ticket.
             const assignation = assignations.find(a => a.ticket_id === doc.id);
             
-            // Récupérer les informations de l'utilisateur
+            // On récupère les infos de l'utilisateur qui a soumis le ticket.
             const userInfo = users[ticket.utilisateur] || {};
             
             tickets.push({
@@ -74,6 +79,7 @@ export async function chargerTickets() {
                 userEmail: userInfo.email || 'Email non disponible',
                 userName: userInfo.nom || 'Nom non disponible',
                 confidence: ticket.confidence || 0,
+                categorie_modifiee: ticket.categorie_modifiee || false,
                 // Informations d'assignation
                 assigne_a: assignation ? assignation.assigne_a : null,
                 assigne_par: assignation ? assignation.assigne_par : null,
@@ -90,7 +96,7 @@ export async function chargerTickets() {
     }
 }
 
-// Fonction pour mettre à jour le statut d'un ticket
+// Petite fonction pour basculer le statut d'un ticket (ex: de 'nouveau' à 'en-cours').
 export async function updateTicketStatus(ticketId, newStatus) {
     try {
         const ticketRef = doc(db, "tickets", ticketId);
@@ -111,10 +117,11 @@ export async function updateTicketStatus(ticketId, newStatus) {
     }
 }
 
-// Fonction pour assigner un ticket à une équipe ou personne
+// Gère toute la logique pour assigner un ticket.
+// Si une ancienne assignation existait, on la termine avant de créer la nouvelle.
 export async function assignerTicket(ticketId, assigneA, equipe = null, commentaire = "") {
     try {
-        // Désactiver l'assignation précédente si elle existe
+        // D'abord, on désactive l'assignation précédente si elle existe.
         const assignationExistante = assignations.find(a => a.ticket_id === ticketId && a.statut_assignation === "active");
         if (assignationExistante) {
             const assignationRef = doc(db, "assignations", assignationExistante.id);
@@ -124,11 +131,11 @@ export async function assignerTicket(ticketId, assigneA, equipe = null, commenta
             });
         }
 
-        // Créer une nouvelle assignation
+        // Ensuite, on crée la nouvelle assignation.
         const nouvelleAssignation = {
             ticket_id: ticketId,
             assigne_a: assigneA,
-            assigne_par: "admin", // À remplacer par l'ID de l'admin connecté
+            assigne_par: "admin", // TODO: Remplacer par l'ID de l'admin actuellement connecté.
             date_assignation: Timestamp.now(),
             equipe: equipe,
             statut_assignation: "active",
@@ -137,7 +144,7 @@ export async function assignerTicket(ticketId, assigneA, equipe = null, commenta
 
         const assignationRef = await addDoc(collection(db, "assignations"), nouvelleAssignation);
 
-        // Mettre à jour les données locales
+        // On recharge les données pour que l'interface soit à jour.
         await chargerAssignations();
         await chargerTickets();
 
@@ -148,10 +155,11 @@ export async function assignerTicket(ticketId, assigneA, equipe = null, commenta
     }
 }
 
-// Fonction pour transférer une assignation
+// Le transfert, c'est simplement terminer l'assignation actuelle
+// avec un statut "transfere" et en créer une nouvelle. On réutilise assignerTicket().
 export async function transfererAssignation(ticketId, nouveauAssigneA, nouvelleEquipe = null, commentaire = "") {
     try {
-        // Terminer l'assignation actuelle
+        // On termine l'assignation actuelle.
         const assignationActuelle = assignations.find(a => a.ticket_id === ticketId && a.statut_assignation === "active");
         if (assignationActuelle) {
             const assignationRef = doc(db, "assignations", assignationActuelle.id);
@@ -162,7 +170,7 @@ export async function transfererAssignation(ticketId, nouveauAssigneA, nouvelleE
             });
         }
 
-        // Créer une nouvelle assignation
+        // Et on en crée une nouvelle.
         return await assignerTicket(ticketId, nouveauAssigneA, nouvelleEquipe, commentaire);
     } catch (error) {
         console.error("Erreur lors du transfert de l'assignation:", error);
@@ -170,7 +178,8 @@ export async function transfererAssignation(ticketId, nouveauAssigneA, nouvelleE
     }
 }
 
-// Fonction pour obtenir les équipes disponibles
+// Retourne la liste statique des équipes. Si un jour ça doit venir de la base,
+// il faudra rendre cette fonction asynchrone.
 export function getEquipesDisponibles() {
     return [
         { id: "support_technique", nom: "Support Technique", description: "Problèmes techniques et bugs" },
@@ -181,7 +190,8 @@ export function getEquipesDisponibles() {
     ];
 }
 
-// Fonction pour obtenir les membres d'une équipe 
+// Pour un ID d'équipe donné, on retourne les membres associés.
+// C'est statique pour l'instant, mais ça pourrait aussi venir de Firestore.
 export function getMembresEquipe(equipeId) {
     const membresParEquipe = {
         "support_technique": [
@@ -205,7 +215,8 @@ export function getMembresEquipe(equipeId) {
     return membresParEquipe[equipeId] || [];
 }
 
-// Fonction pour obtenir le prochain statut possible
+// Le cycle de vie d'un ticket. On définit ici quel statut suit quel autre.
+// Ça permet de changer le statut d'un simple clic sur un bouton.
 function getNextStatus(currentStatus) {
     const statusFlow = {
         'nouveau': 'en-cours',
@@ -216,7 +227,8 @@ function getNextStatus(currentStatus) {
     return statusFlow[currentStatus] || 'nouveau';
 }
 
-// Fonction pour afficher les tickets dans le tableau
+// C'est la fonction qui "dessine" le tableau des tickets dans le HTML.
+// Elle prend en compte le terme de recherche et la pagination.
 export function renderTicketsTable(searchTerm = '') {
     const tbody = document.getElementById('ticketsTableBody');
     if (!tbody) {
@@ -235,54 +247,114 @@ export function renderTicketsTable(searchTerm = '') {
           )
         : tickets;
 
-    if (filteredTickets.length === 0) {
+    // On applique la pagination sur les tickets filtrés.
+    const totalPages = Math.ceil(filteredTickets.length / TICKETS_PER_PAGE);
+    if (currentPage > totalPages) {
+        currentPage = totalPages > 0 ? totalPages : 1;
+    }
+    const startIndex = (currentPage - 1) * TICKETS_PER_PAGE;
+    const paginatedTickets = filteredTickets.slice(startIndex, startIndex + TICKETS_PER_PAGE);
+
+    if (paginatedTickets.length === 0 && searchTerm) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="10" class="no-tickets">
-                    Aucun ticket trouvé
+                    Aucun ticket ne correspond à votre recherche.
                 </td>
             </tr>
         `;
-        return;
+    } else if (paginatedTickets.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="10" class="no-tickets">
+                    Aucun ticket à afficher.
+                </td>
+            </tr>
+        `;
+    } else {
+        tbody.innerHTML = paginatedTickets.map(ticket => `
+            <tr>
+                <td class="ticket-id">${ticket.id}</td>
+                <td>${ticket.title}</td>
+                <td><span class="ticket-status status-${ticket.status}">${getStatusLabel(ticket.status)}</span></td>
+                <td><span class="category-tag cat-${ticket.category}">${getCategoryLabel(ticket.category)}</span></td>
+                <td>${formatDate(ticket.date)}</td>
+                <td>
+                    <div class="user-info">
+                        <div class="user-name">${ticket.userName}</div>
+                        <div class="user-email">${ticket.userEmail}</div>
+                    </div>
+                </td>
+                <td>
+                    ${ticket.equipe ? 
+                        `<span class="equipe-tag">${getEquipeLabel(ticket.equipe)}</span>` : 
+                        '<span class="non-assigne">Non assigné</span>'
+                    }
+                </td>
+                <td>
+                    <div class="ticket-actions-dropdown">
+                        <button class="actions-btn" onclick="toggleActions(event)">•••</button>
+                        <div class="actions-menu">
+                            <a href="#" onclick="viewTicket('${ticket.id}'); event.target.closest('.actions-menu').classList.remove('active'); return false;">👁️ Voir</a>
+                            <a href="#" onclick="changeTicketStatus('${ticket.id}'); event.target.closest('.actions-menu').classList.remove('active'); return false;">🔄 Changer Statut</a>
+                            <a href="#" onclick="assignerTicketModal('${ticket.id}'); event.target.closest('.actions-menu').classList.remove('active'); return false;">👥 Assigner</a>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
     }
 
-    tbody.innerHTML = filteredTickets.map(ticket => `
-        <tr>
-            <td class="ticket-id">${ticket.id}</td>
-            <td>${ticket.title}</td>
-            <td><span class="ticket-status status-${ticket.status}">${getStatusLabel(ticket.status)}</span></td>
-            <td><span class="category-tag cat-${ticket.category}">${getCategoryLabel(ticket.category)}</span></td>
-            <td>${formatDate(ticket.date)}</td>
-            <td>
-                <div class="user-info">
-                    <div class="user-name">${ticket.userName}</div>
-                    <div class="user-email">${ticket.userEmail}</div>
-                </div>
-            </td>
-            <td>
-                ${ticket.equipe ? 
-                    `<span class="equipe-tag">${getEquipeLabel(ticket.equipe)}</span>` : 
-                    '<span class="non-assigne">Non assigné</span>'
-                }
-            </td>
-            <td>
-                <div class="ticket-actions">
-                    <button class="btn btn-secondary" onclick="viewTicket('${ticket.id}')">
-                        👁️ Voir
-                    </button>
-                    <button class="btn btn-primary" onclick="changeTicketStatus('${ticket.id}')">
-                        🔄 Changer Statut
-                    </button>
-                    <button class="btn btn-success" onclick="assignerTicketModal('${ticket.id}')">
-                        👥 Assigner
-                    </button>
-                </div>
-            </td>
-        </tr>
-    `).join('');
+    renderPaginationControls(filteredTickets.length);
 }
 
-// Fonctions utilitaires
+// Quand l'utilisateur tape une recherche, on doit revenir à la première page.
+export function resetCurrentPage() {
+    currentPage = 1;
+}
+
+// Ici, on génère les boutons "Précédent" / "Suivant" et l'indicateur de page.
+function renderPaginationControls(totalTickets) {
+    const paginationContainer = document.getElementById('paginationContainer');
+    if (!paginationContainer) return;
+
+    const totalPages = Math.ceil(totalTickets / TICKETS_PER_PAGE);
+    paginationContainer.innerHTML = '';
+
+    if (totalPages <= 1) return;
+
+    // Bouton Précédent
+    const prevButton = document.createElement('button');
+    prevButton.innerHTML = '&laquo; Précédent';
+    prevButton.disabled = currentPage === 1;
+    prevButton.addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            renderTicketsTable(document.getElementById('searchInput').value);
+        }
+    });
+    paginationContainer.appendChild(prevButton);
+
+    // Pour l'instant, un simple texte "Page X sur Y" suffit entre les boutons
+    const pageInfo = document.createElement('span');
+    pageInfo.textContent = `Page ${currentPage} sur ${totalPages}`;
+    pageInfo.style.margin = '0 1rem';
+    paginationContainer.appendChild(pageInfo);
+
+    // Bouton Suivant
+    const nextButton = document.createElement('button');
+    nextButton.innerHTML = 'Suivant &raquo;';
+    nextButton.disabled = currentPage === totalPages;
+    nextButton.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderTicketsTable(document.getElementById('searchInput').value);
+        }
+    });
+    paginationContainer.appendChild(nextButton);
+}
+
+// Fonctions utilitaires pour obtenir des libellés propres à partir des ID.
 function getStatusLabel(status) {
     const labels = {
         'nouveau': 'Nouveau',
@@ -312,17 +384,17 @@ function getEquipeLabel(equipeId) {
 function formatDate(date) {
     if (!date) return 'Non spécifié';
     
-    // Si c'est un Timestamp Firestore, le convertir en Date
+    // On s'assure de travailler avec un objet Date, peu importe ce que Firestore nous envoie (Timestamp, string...).
     if (date && typeof date.toDate === 'function') {
         date = date.toDate();
     }
     
-    // Si c'est une chaîne de caractères, la convertir en Date
+    // Si c'est une chaîne de caractères, on essaie de la convertir.
     if (typeof date === 'string') {
         date = new Date(date);
     }
     
-    // Vérifier que c'est bien un objet Date valide
+    // Ultime vérification pour éviter les erreurs "Invalid Date".
     if (!(date instanceof Date) || isNaN(date.getTime())) {
         return 'Date invalide';
     }
@@ -330,7 +402,7 @@ function formatDate(date) {
     return date.toLocaleString('fr-FR');
 }
 
-// Fonction pour afficher les détails d'un ticket
+// Gère l'affichage de la modale qui montre tous les détails d'un ticket.
 export function viewTicket(ticketId) {
     const ticket = tickets.find(t => t.id === ticketId);
     if (!ticket) return;
@@ -341,7 +413,7 @@ export function viewTicket(ticketId) {
         return;
     }
 
-    // Informations d'assignation
+    // On prépare le bloc d'infos sur l'assignation.
     const assignationInfo = ticket.equipe ? `
         <p><strong>Équipe assignée :</strong> <span class="equipe-tag">${getEquipeLabel(ticket.equipe)}</span></p>
         <p><strong>Assigné à :</strong> ${ticket.assigne_a || 'Non spécifié'}</p>
@@ -350,7 +422,7 @@ export function viewTicket(ticketId) {
         ${ticket.commentaire_assignation ? `<p><strong>Commentaire pour l'équipe :</strong> ${ticket.commentaire_assignation}</p>` : ''}
     ` : '<p><strong>Assignation :</strong> <span class="non-assigne">Non assigné</span></p>';
 
-    // Mettre à jour le contenu du modal
+    // On injecte tout le HTML dans la modale.
     modal.innerHTML = `
         <div class="modal-content">
             <div class="modal-header">
@@ -381,7 +453,8 @@ export function viewTicket(ticketId) {
     modal.classList.add('active');
 }
 
-// Fonction pour changer le statut d'un ticket
+// La fonction appelée par le bouton "Changer Statut".
+// Elle utilise le cycle de vie défini dans getNextStatus.
 export async function changeTicketStatus(ticketId) {
     try {
         const ticket = tickets.find(t => t.id === ticketId);
@@ -391,7 +464,7 @@ export async function changeTicketStatus(ticketId) {
         await updateTicketStatus(ticketId, newStatus);
         renderTicketsTable();
         
-        // Afficher une notification de succès
+        // C'est toujours bien de donner un retour visuel à l'utilisateur.
         const toast = document.getElementById('toast');
         if (toast) {
             toast.textContent = `Statut du ticket mis à jour vers ${getStatusLabel(newStatus)}`;
@@ -402,7 +475,7 @@ export async function changeTicketStatus(ticketId) {
         }
     } catch (error) {
         console.error("Erreur lors du changement de statut:", error);
-        // Afficher une notification d'erreur
+        // Et on lui montre aussi quand ça ne marche pas.
         const toast = document.getElementById('toast');
         if (toast) {
             toast.textContent = "Erreur lors du changement de statut";
@@ -414,7 +487,8 @@ export async function changeTicketStatus(ticketId) {
     }
 }
 
-// Fonction pour compter les tickets "resolu"
+// Fonctions de comptage pour les stats du tableau de bord.
+// Utilise getCountFromServer qui est optimisé pour ne pas télécharger tous les documents.
 export async function compterTicketsResolu() {
     try {
         const ticketsRef = collection(db, "tickets");
@@ -449,7 +523,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('nbTicketsEnCours').textContent = nbTicketsEnCours;
 }); 
 
-// Fonction pour compter les tickets par niveau de confiance
+// Calcule la répartition des tickets en fonction du score de confiance de la prédiction.
 export function compterTicketsParNiveauDeConfiance() {
     const confidenceCounts = {
         'Haute (90%+)': 0,
@@ -471,7 +545,8 @@ export function compterTicketsParNiveauDeConfiance() {
     return confidenceCounts;
 }
 
-// Fonction pour compter les tickets par catégorie
+// Calcule le nombre de tickets pour chaque catégorie.
+// C'est utilisé pour le graphique "donut" des catégories.
 export async function compterTicketsParCategorie() {
     try {
         const ticketsRef = collection(db, "tickets");
@@ -489,12 +564,13 @@ export async function compterTicketsParCategorie() {
             'Autre': 0
         };
         
-        // Compter les tickets par catégorie
+        // On parcourt tous les tickets pour faire le compte.
         querySnapshot.forEach((doc) => {
             const ticket = doc.data();
             const categorie = ticket.categorie;
             
-            // Mapper les catégories de la base de données vers les labels du graphique
+            // Ce mapping nous assure que même si les ID de catégories changent un peu,
+            // on les regroupe correctement pour l'affichage.
             const categorieMapping = {
                 'Support Technique': 'Support Technique',
                 'Assistance Générale': 'Assistance Générale',
@@ -526,7 +602,7 @@ export async function compterTicketsParCategorie() {
     }
 }
 
-// Fonction pour ouvrir le modal d'assignation
+// Affiche la modale pour assigner ou transférer un ticket.
 export function assignerTicketModal(ticketId) {
     const ticket = tickets.find(t => t.id === ticketId);
     if (!ticket) return;
@@ -598,7 +674,7 @@ export function assignerTicketModal(ticketId) {
     modal.classList.add('active');
 }
 
-// Fonction pour confirmer l'assignation
+// Appelé par le bouton "Confirmer" de la modale d'assignation.
 export async function confirmerAssignation(ticketId) {
     try {
         const equipeSelect = document.getElementById('equipeSelect');
@@ -614,17 +690,17 @@ export async function confirmerAssignation(ticketId) {
             return;
         }
         
-        // Assigner le ticket
+        // On lance l'assignation...
         await assignerTicket(ticketId, membre || equipe, equipe, commentaire);
         
-        // Fermer le modal
+        // ...on ferme la modale...
         const modal = document.getElementById('ticketDetailsModal');
         modal.classList.remove('active');
         
-        // Rafraîchir le tableau
+        // ...on rafraîchit le tableau...
         renderTicketsTable();
         
-        // Afficher une notification de succès
+        // ...et on confirme à l'utilisateur que tout s'est bien passé.
         const toast = document.getElementById('toast');
         if (toast) {
             toast.textContent = `Ticket assigné avec succès à ${equipe}`;
@@ -639,7 +715,8 @@ export async function confirmerAssignation(ticketId) {
     }
 }
 
-// Fonction pour mettre à jour les options des membres selon l'équipe sélectionnée
+// Petite fonction dynamique qui met à jour la liste des membres
+// en fonction de l'équipe sélectionnée dans le formulaire d'assignation.
 export function updateMembresOptions() {
     const equipeSelect = document.getElementById('equipeSelect');
     const membreSelect = document.getElementById('membreSelect');
@@ -659,9 +736,154 @@ export function updateMembresOptions() {
     });
 }
 
-// Fonctions globales pour l'interface
+// On expose certaines fonctions à l'objet global `window` pour qu'elles puissent
+// être appelées par les attributs `onclick` dans le HTML.
 window.viewTicket = viewTicket;
 window.changeTicketStatus = changeTicketStatus;
 window.assignerTicketModal = assignerTicketModal;
 window.confirmerAssignation = confirmerAssignation;
-window.updateMembresOptions = updateMembresOptions; 
+window.updateMembresOptions = updateMembresOptions;
+
+// --- Fonctions pour les nouveaux graphiques ---
+
+// 1. Distribution des Scores de Confiance
+export function getConfidenceDistribution(period = '7d') {
+    let ticketsToProcess = tickets;
+
+    if (period !== 'all') {
+        const days = parseInt(period.replace('d', ''));
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(endDate.getDate() - days);
+        ticketsToProcess = tickets.filter(t => t.date >= startDate && t.date <= endDate);
+    }
+
+    const bins = Array(10).fill(0);
+    const labels = Array.from({ length: 10 }, (_, i) => `${i * 10}-${(i + 1) * 10}%`);
+
+    ticketsToProcess.forEach(ticket => {
+        if (typeof ticket.confidence === 'number') {
+            const binIndex = Math.floor(ticket.confidence * 10);
+            if (binIndex >= 0 && binIndex < 10) {
+                bins[binIndex]++;
+            } else if (ticket.confidence === 1) { // il faut penser au cas où la confiance est exactement 1
+                bins[9]++;
+            }
+        }
+    });
+
+    return { labels, data: bins };
+}
+
+
+// 2. Évolution des Assignations par Équipe
+export async function getTeamAssignmentEvolution(days = 30) {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - days);
+    const startTimestamp = Timestamp.fromDate(startDate);
+
+    const assignationsRef = collection(db, "assignations");
+    const q = query(assignationsRef, where("date_assignation", ">=", startTimestamp));
+    const snapshot = await getDocs(q);
+
+    const teamData = {}; // On va stocker les données comme ça : { equipe: { date: count } }
+    const allEquipes = new Set();
+    const allDates = new Set();
+
+    snapshot.forEach(doc => {
+        const assignation = doc.data();
+        if (assignation.equipe && assignation.date_assignation) {
+            const equipe = getEquipeLabel(assignation.equipe); // On utilise le nom de l'équipe pour que ce soit plus lisible.
+            const date = assignation.date_assignation.toDate().toISOString().split('T')[0];
+            
+            allEquipes.add(equipe);
+            allDates.add(date);
+
+            if (!teamData[equipe]) teamData[equipe] = {};
+            teamData[equipe][date] = (teamData[equipe][date] || 0) + 1;
+        }
+    });
+
+    const sortedDates = Array.from(allDates).sort();
+    const labels = sortedDates.map(d => new Date(d).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' }));
+    
+    const datasets = Array.from(allEquipes).map(equipe => {
+        return {
+            label: equipe,
+            data: sortedDates.map(date => teamData[equipe][date] || 0),
+        };
+    });
+
+    return { labels, datasets };
+}
+
+
+// 3. Évolution du Feedback sur les Prédictions
+export async function getPredictionFeedbackEvolution(days = 7) {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - days);
+    const startTimestamp = Timestamp.fromDate(startDate);
+
+    const feedbackRef = collection(db, "prediction_feedback");
+    const q = query(feedbackRef, where("feedback_date", ">=", startTimestamp));
+    const snapshot = await getDocs(q);
+
+    const dailyData = {};
+    for (let i = 0; i < days; i++) {
+        const d = new Date(startDate);
+        d.setDate(d.getDate() + i);
+        const key = d.toISOString().split('T')[0];
+        dailyData[key] = { correct: 0, incorrect: 0 };
+    }
+
+    snapshot.forEach(doc => {
+        const feedback = doc.data();
+        if (feedback.feedback_date) {
+            const key = feedback.feedback_date.toDate().toISOString().split('T')[0];
+            if (dailyData[key]) {
+                if (feedback.needs_retraining === false) {
+                    dailyData[key].correct++;
+                } else {
+                    dailyData[key].incorrect++;
+                }
+            }
+        }
+    });
+    
+    const labels = Object.keys(dailyData).map(d => new Date(d).toLocaleDateString('fr-FR', { weekday: 'short' }));
+    const correctData = Object.values(dailyData).map(d => d.correct);
+    const incorrectData = Object.values(dailyData).map(d => d.incorrect);
+
+    return { labels, correctData, incorrectData };
+}
+
+
+// 4. Répartition des Corrections par Catégorie
+export async function getCategoryCorrectionsData() {
+    const correctionsRef = collection(db, "corrections");
+    const snapshot = await getDocs(correctionsRef);
+
+    const correctionsCount = {}; // On stocke les comptes comme ça : { categorie: count }
+
+    snapshot.forEach(doc => {
+        const correction = doc.data();
+        // Ce qui nous intéresse, c'est la catégorie que le modèle avait prédite à tort.
+        const oldCategory = getCategoryLabel(correction.ancienne_categorie_id || 'Autre');
+
+        correctionsCount[oldCategory] = (correctionsCount[oldCategory] || 0) + 1;
+    });
+
+    const labels = Object.keys(correctionsCount);
+    const data = Object.values(correctionsCount);
+
+    // C'est plus parlant de trier pour voir tout de suite les catégories les plus problématiques.
+    const sortedData = labels.map((label, index) => ({ label, count: data[index] }))
+        .sort((a, b) => b.count - a.count);
+
+    return {
+        labels: sortedData.map(item => item.label),
+        data: sortedData.map(item => item.count)
+    };
+} 

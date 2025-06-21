@@ -109,14 +109,14 @@
 
                 <div class="chart-container">
                     <div class="chart-header">
-                        <h3 class="chart-title">Évolution des Classifications</h3>
+                        <h3 class="chart-title">Distribution des Scores de Confiance</h3>
                         <div class="chart-filter">
-                            <button class="filter-btn active">7 jours</button>
-                            <button class="filter-btn">30 jours</button>
-                            <button class="filter-btn">3 mois</button>
+                            <button class="filter-btn active" data-period="7d">7 jours</button>
+                            <button class="filter-btn" data-period="30d">30 jours</button>
+                            <button class="filter-btn" data-period="all">Tout</button>
                         </div>
                     </div>
-                    <canvas id="classificationsChart" width="400" height="200"></canvas>
+                    <canvas id="confidenceDistributionChart" width="400" height="200"></canvas>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
@@ -143,14 +143,10 @@
                         <input type="text" class="search-input" placeholder="Rechercher un ticket..." id="searchInput">
                         <span class="search-icon">🔍</span>
                     </div>
-                    <div class="action-buttons">
-                        <button class="btn btn-secondary" id="bulkClassifyBtn">
-                            🤖 Classification en Lot
-                        </button>
-                        <button class="btn btn-primary" id="newTicketBtn">
-                            ➕ Nouveau Ticket
-                        </button>
+                    <div>
+                        <button><a href="test-assignation.html" target="_blank">Voir page de test des assignations</a></button>
                     </div>
+                    
                 </div>
 
                 <div class="ticket-table">
@@ -175,6 +171,9 @@
                                 <!-- géré par JavaScript -->
                             </tbody>
                         </table>
+                    </div>
+                    <div id="paginationContainer" class="pagination">
+                        <!-- Les contrôles de pagination seront générés ici -->
                     </div>
                 </div>
             </div>
@@ -211,16 +210,23 @@
 
                 <div class="chart-container">
                     <div class="chart-header">
-                        <h3 class="chart-title">Performance Mensuelle du Modèle</h3>
+                        <h3 class="chart-title">Évolution des Assignations par Équipe</h3>
                     </div>
-                    <canvas id="performanceChart" width="400" height="200"></canvas>
+                    <canvas id="teamEvolutionChart" width="400" height="200"></canvas>
                 </div>
 
                 <div class="chart-container">
                     <div class="chart-header">
-                        <h3 class="chart-title">Analyse des Erreurs de Classification</h3>
+                        <h3 class="chart-title">Évolution du Feedback sur les Prédictions</h3>
                     </div>
-                    <canvas id="errorsChart" width="400" height="200"></canvas>
+                    <canvas id="predictionFeedbackChart" width="400" height="200"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Répartition des Corrections apportées par Catégorie</h3>
+                    </div>
+                    <canvas id="categoryCorrectionsChart" width="400" height="200"></canvas>
                 </div>
             </div>
 
@@ -267,9 +273,9 @@
                             <p class="settings-description">Exporter les données d'analyse</p>
                         </div>
                         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <button class="btn btn-secondary">📊 CSV</button>
-                            <button class="btn btn-secondary">📈 Excel</button>
-                            <button class="btn btn-secondary">📋 PDF</button>
+                            <button class="btn btn-secondary" id="exportTicketsCSV">🎫 Tickets (CSV)</button>
+                            <button class="btn btn-secondary" id="exportChartsCSV">📊 Données des graphiques (CSV)</button>
+                            <button class="btn btn-secondary" id="exportReportPDF">📋 Rapport Complet (PDF)</button>
                         </div>
                     </div>
                 </div>
@@ -329,10 +335,13 @@
     <div id="toast" class="toast"></div>
 
     <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script type="module" src="/js/firebase-init.js"></script>
     <script type="module" src="/js/tickets-manager.js"></script>
+    <script type="module" src="/js/export-manager.js"></script>
     <script type="module" src="/js/admin.js"></script>
     <script type="module" src="/js/auth-session.js"></script>
 </body>
 </html>
+                        
                         
