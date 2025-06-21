@@ -76,7 +76,7 @@ class FirebaseConnector:
                 'id': 'sample_3',
                 'titre': 'L\'application plante',
                 'description': 'Quand je clique sur le bouton sauvegarder, l\'application se ferme',
-                'categorie': 'Bug Report',
+                'categorie': 'Signalement de Bug',
                 'dateSoumission': datetime.now(),
                 'statut': 'Résolu'
             }

@@ -114,7 +114,7 @@ def test_feedback():
     feedback_data = {
         "ticket_id": "test_ticket_123",
         "predicted_category": "Support Technique",
-        "actual_category": "Bug Report",
+        "actual_category": "Signalement de Bug",
         "confidence": 0.85
     }
     
