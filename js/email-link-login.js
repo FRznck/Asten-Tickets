@@ -25,7 +25,7 @@ async function saveUserToFirestore(user) {
 }
 
 const actionCodeSettings = {
-    url: 'http://127.0.0.1:5502/auth.html',
+    url: 'http://127.0.0.1:5503/auth.html',
     handleCodeInApp: true
 };
 

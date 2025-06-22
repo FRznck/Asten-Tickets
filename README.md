@@ -257,5 +257,7 @@ python diagnose_model.py
 **Asten-Tickets** - Système de gestion de tickets intelligent avec IA
 
 ---
+pour lancer un entrainement manuel :  curl -X POST http://localhost:8000/retrain
+pour lancer l'api :  uvicorn api_server:app --host 0.0.0.0 --port 8000 --reload --log-level debug  ou uvicorn api_server:app --reload
 
 **🎉 Votre système de tickets intelligent est prêt !** 
