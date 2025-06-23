@@ -1,0 +1,576 @@
+================================================================================
+                    ARCHITECTURE TECHNIQUE - ASTEN TICKETS
+================================================================================
+
+📋 DESCRIPTION GÉNÉRALE
+================================================================================
+
+Asten-Tickets est une application web complète de gestion de tickets de support 
+avec intégration d'intelligence artificielle pour la classification automatique 
+des demandes. Le système combine une interface utilisateur moderne avec un 
+moteur NLP (Natural Language Processing) pour optimiser le traitement des tickets.
+
+🏗️ ARCHITECTURE GLOBALE
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           ASTEN TICKETS - ARCHITECTURE                      │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────────────┐ │
+│  │   FRONTEND      │    │   BACKEND       │    │   SYSTÈME IA            │ │
+│  │   (HTML/CSS/JS) │    │   (Firebase)    │    │   (Python/FastAPI)      │ │
+│  └─────────────────┘    └─────────────────┘    └─────────────────────────┘ │
+│           │                       │                       │                 │
+│           └───────────────────────┼───────────────────────┘                 │
+│                                   │                                         │
+│  ┌─────────────────────────────────┼─────────────────────────────────────────┐ │
+│  │                    FIREBASE (Base de données + Auth)                      │ │
+│  └─────────────────────────────────┼─────────────────────────────────────────┘ │
+│                                   │                                         │
+│  ┌─────────────────────────────────┼─────────────────────────────────────────┐ │
+│  │                    API REST (Port 8000)                                  │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+📁 STRUCTURE DES FICHIERS
+================================================================================
+
+ASTEN-TICKETS/
+├── 📁 FRONTEND (Interface Utilisateur)
+│   ├── auth.html                    # Page d'authentification
+│   ├── user-dashboard.html          # Dashboard utilisateur
+│   ├── admin-dashboard.html         # Dashboard administrateur
+│   ├── loading.html                 # Page de chargement
+│   ├── ticket-success.html          # Page de succès ticket
+│   ├── ticket-error.html            # Page d'erreur ticket
+│   ├── test-assignation.html        # Page de test assignation
+│   └── init-notifications.html      # Page d'initialisation notifications
+│
+├── 📁 CSS (Styles)
+│   ├── style.css                    # Styles globaux
+│   ├── auth.css                     # Styles authentification
+│   ├── dashboard.css                # Styles dashboard
+│   ├── admin.css                    # Styles admin
+│   └── user.css                     # Styles utilisateur
+│
+├── 📁 JS (Logique Frontend)
+│   ├── firebase-config.js           # Configuration Firebase
+│   ├── firebase-init.js             # Initialisation Firebase
+│   ├── auth.js                      # Gestion authentification
+│   ├── auth-session.js              # Gestion sessions
+│   ├── google-login.js              # Connexion Google
+│   ├── email-link-login.js          # Connexion par lien email
+│   ├── role-redirect.js             # Redirection selon rôle
+│   ├── main.js                      # Script principal
+│   ├── user.js                      # Logique utilisateur
+│   ├── admin.js                     # Logique administrateur
+│   ├── tickets-manager.js           # Gestion des tickets
+│   ├── export-manager.js            # Export des données
+│   ├── notifications-manager.js     # Gestionnaire notifications
+│   ├── notifications-ui.js          # Interface notifications
+│   └── init-notifications.js        # Initialisation notifications
+│
+├── 📁 NLP_MODEL (Système IA)
+│   ├── run.py                       # Point d'entrée principal
+│   ├── api_server.py                # Serveur API FastAPI
+│   ├── ticket_classifier.py         # Moteur de classification
+│   ├── text_preprocessor.py         # Prétraitement texte
+│   ├── firebase_connector.py        # Connexion Firebase
+│   ├── training_scheduler.py        # Planificateur entraînement
+│   ├── diagnose_model.py            # Diagnostic modèle
+│   ├── config.py                    # Configuration centralisée
+│   ├── test_system.py               # Tests système
+│   ├── start_nlp.bat                # Script démarrage Windows
+│   ├── requirements.txt             # Dépendances Python
+│   ├── firebase-credentials.json    # Credentials Firebase
+│   ├── firebase-credentials.example.json
+│   ├── INSTALLATION_RAPIDE.md       # Guide installation
+│   ├── nlp_system.log               # Logs système
+│   ├── 📁 models/                   # Modèles entraînés
+│   │   ├── ticket_classifier.joblib
+│   │   ├── tfidf_vectorizer.joblib
+│   │   └── label_encoder.joblib
+│   ├── 📁 data/                     # Données d'entraînement
+│   ├── 📁 logs/                     # Logs système
+│   └── 📁 txt_and_rd/               # Documentation
+│
+├── 📁 CHATBOT (Futur développement)
+│   └── 📁 data/
+│
+├── README.md                        # Documentation principale
+├── IMPLEMENTATION_NOTIFICATIONS.md  # Documentation notifications
+├── NOTIFICATIONS_README.md          # Guide notifications
+└── ARCHITECTURE_TECHNIQUE_ASTEN_TICKETS.txt (ce fichier)
+
+🔧 TECHNOLOGIES UTILISÉES
+================================================================================
+
+FRONTEND:
+├── HTML5                           # Structure des pages
+├── CSS3                            # Styles et animations
+├── JavaScript ES6+                 # Logique côté client
+├── Firebase SDK                    # Intégration Firebase
+└── Responsive Design               # Design adaptatif
+
+BACKEND:
+├── Firebase Authentication         # Authentification utilisateurs
+├── Firebase Firestore              # Base de données NoSQL
+├── Firebase Hosting                # Hébergement (optionnel)
+└── Firebase Security Rules         # Règles de sécurité
+
+SYSTÈME IA (Python):
+├── FastAPI                         # Serveur API REST
+├── Scikit-learn                    # Machine Learning
+├── Pandas                          # Manipulation données
+├── NumPy                           # Calculs numériques
+├── NLTK                            # Traitement langage naturel
+├── TextBlob                        # Analyse de sentiment
+├── Sentence-Transformers           # Embeddings de phrases
+├── Firebase Admin SDK              # Connexion Firebase
+├── Uvicorn                         # Serveur ASGI
+└── Joblib                          # Sauvegarde modèles
+
+AUTHENTIFICATION:
+├── Email/Mot de passe              # Authentification classique
+├── Google OAuth                    # Connexion Google
+├── Liens magiques                  # Connexion sans mot de passe
+└── Sessions sécurisées             # Gestion des sessions
+
+🤖 SYSTÈME D'INTELLIGENCE ARTIFICIELLE
+================================================================================
+
+ARCHITECTURE NLP:
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           SYSTÈME NLP - FLUX DE DONNÉES                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐   │
+│  │   TEXTE     │───▶│PRÉTRAITEMENT│───▶│VECTORISATION│───▶│ CLASSIFIEUR │   │
+│  │  TICKET     │    │   NLTK      │    │   TF-IDF    │    │RANDOM FOREST│   │
+│  └─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘   │
+│                                                                             │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐   │
+│  │  FEEDBACK   │◀───│  PRÉDICTION │◀───│   SCORE     │◀───│  CATÉGORIE  │   │
+│  │ UTILISATEUR │    │   RÉSULTAT  │    │ CONFIDENCE  │    │  PRÉDITE    │   │
+│  └─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+COMPOSANTS IA:
+
+1. TICKET_CLASSIFIER.PY:
+   ├── Modèle Random Forest
+   ├── Prédiction avec scores de confiance
+   ├── Entraînement et réentraînement
+   ├── Évaluation des performances
+   └── Sauvegarde/chargement des modèles
+
+2. TEXT_PREPROCESSOR.PY:
+   ├── Nettoyage des textes
+   ├── Suppression mots vides
+   ├── Tokenisation
+   ├── Normalisation
+   └── Extraction mots-clés
+
+3. API_SERVER.PY (Endpoints):
+   ├── POST /predict              # Classification ticket
+   ├── POST /feedback             # Sauvegarde feedback
+   ├── POST /retrain              # Réentraînement manuel
+   ├── GET /model-info            # Informations modèle
+   ├── GET /health                # Vérification état
+   └── GET /categories            # Liste catégories
+
+4. TRAINING_SCHEDULER.PY:
+   ├── Surveillance nouveaux tickets
+   ├── Planification entraînements
+   ├── Déclenchement automatique
+   └── Gestion asynchrone
+
+CATÉGORIES DE TICKETS (8):
+├── Support Technique
+├── Assistance Générale
+├── Demande de Fonctionnalité
+├── Signalement de Bug
+├── Question sur l'Utilisation
+├── Problème d'Accès / Connexion
+├── Demande de Remboursement
+└── Autre
+
+🔔 SYSTÈME DE NOTIFICATIONS
+================================================================================
+
+ARCHITECTURE NOTIFICATIONS:
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        SYSTÈME DE NOTIFICATIONS                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐   │
+│  │   ÉVÉNEMENT │───▶│ CRÉATION    │───▶│  FIRESTORE  │───▶│  INTERFACE  │   │
+│  │  SYSTÈME    │    │ NOTIFICATION│    │  COLLECTION │    │  UTILISATEUR │   │
+│  └─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘   │
+│                                                                             │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐   │
+│  │  TEMPS RÉEL │◀───│  ÉCOUTE     │◀───│  MISE À     │◀───│  BADGE      │   │
+│  │  UPDATES    │    │  FIRESTORE  │    │  JOUR UI    │    │  COMPTEUR   │   │
+│  └─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+TYPES DE NOTIFICATIONS:
+├── TICKET_CREE                    # Nouveau ticket créé
+├── TICKET_ASSIGNE                 # Ticket assigné
+├── TICKET_MODIFIE                 # Statut modifié
+├── TICKET_RESOLU                  # Ticket résolu
+├── ASSIGNATION_CREEE              # Nouvelle assignation
+├── ASSIGNATION_MODIFIEE           # Assignation modifiée
+├── SYSTEME_MAINTENANCE            # Maintenance système
+├── MESSAGE_GENERAL                # Message général
+└── RAPPEL                         # Rappel/notification
+
+PRIORITÉS:
+├── HAUTE                          # Rouge (#dc3545)
+├── NORMALE                        # Bleu (#007bff)
+└── BASSE                          # Gris (#6c757d)
+
+STATUTS:
+├── NON_LUE                        # Notification non lue
+├── LUE                            # Notification lue
+└── ARCHIVEE                       # Notification archivée
+
+STRUCTURE FIRESTORE:
+Collection: notifications
+├── id                             # ID auto-généré
+├── notification_id                # ID unique (NOTIF-2024-001)
+├── titre                          # Titre notification
+├── message                        # Message détaillé
+├── type                           # Type notification
+├── priorite                       # Priorité (haute/normale/basse)
+├── destinataire_id                # UID destinataire
+├── destinataire_email             # Email destinataire
+├── entite_type                    # Type entité (ticket, utilisateur, etc.)
+├── entite_id                      # ID entité concernée
+├── lien_action                    # Lien pour agir
+├── date_creation                  # Timestamp création
+├── date_lecture                   # Timestamp lecture
+├── statut                         # Statut (non_lue/lue/archivee)
+├── donnees_extra                  # Données supplémentaires
+├── envoyer_email                  # Flag envoi email
+├── cree_par                       # UID créateur
+└── version                        # Version format
+
+🔐 SÉCURITÉ ET AUTHENTIFICATION
+================================================================================
+
+FIREBASE AUTHENTIFICATION:
+├── Méthodes d'authentification:
+│   ├── Email/Mot de passe
+│   ├── Google OAuth
+│   └── Liens magiques
+├── Gestion des sessions
+├── Règles de sécurité Firestore
+└── Protection des routes
+
+RÔLES UTILISATEURS:
+├── Utilisateur standard
+│   ├── Création de tickets
+│   ├── Consultation de ses tickets
+│   ├── Réception de notifications
+│   └── Modification de profil
+└── Administrateur
+    ├── Gestion de tous les tickets
+    ├── Assignation des tickets
+    ├── Export des données
+    ├── Gestion des utilisateurs
+    └── Accès aux statistiques
+
+RÈGLES DE SÉCURITÉ FIRESTORE:
+├── Lecture: Utilisateur authentifié
+├── Écriture: Utilisateur authentifié
+├── Suppression: Administrateur uniquement
+└── Validation des données
+
+📊 BASE DE DONNÉES (FIRESTORE)
+================================================================================
+
+COLLECTIONS PRINCIPALES:
+
+1. users
+   ├── uid                         # ID utilisateur Firebase
+   ├── email                       # Email utilisateur
+   ├── nom                         # Nom complet
+   ├── role                        # Rôle (user/admin)
+   ├── date_creation               # Date création compte
+   ├── derniere_connexion          # Dernière connexion
+   └── preferences                 # Préférences utilisateur
+
+2. tickets
+   ├── id                          # ID auto-généré
+   ├── ticket_id                   # ID unique (TK-2024-001)
+   ├── titre                       # Titre du ticket
+   ├── description                 # Description détaillée
+   ├── categorie                   # Catégorie prédite par IA
+   ├── categorie_ia                # Score confiance IA
+   ├── statut                      # Statut (nouveau/en_cours/resolu)
+   ├── priorite                    # Priorité (basse/normale/haute)
+   ├── email                       # Email créateur
+   ├── nom_utilisateur             # Nom créateur
+   ├── date_creation               # Timestamp création
+   ├── date_modification           # Timestamp modification
+   ├── date_resolution             # Timestamp résolution
+   ├── assigne_a                   # UID assigné à
+   ├── assigne_par                 # UID qui a assigné
+   ├── resolu_par                  # UID qui a résolu
+   ├── commentaires                # Array de commentaires
+   ├── feedback_ia                 # Feedback utilisateur sur IA
+   └── tags                        # Tags additionnels
+
+3. assignations
+   ├── id                          # ID auto-généré
+   ├── assignation_id              # ID unique (ASS-2024-001)
+   ├── ticket_id                   # ID du ticket
+   ├── assigne_a                   # UID assigné à
+   ├── assigne_par                 # UID qui a assigné
+   ├── date_assignation            # Timestamp assignation
+   ├── date_modification           # Timestamp modification
+   ├── statut                      # Statut assignation
+   ├── commentaire                 # Commentaire assignation
+   └── priorite                    # Priorité assignation
+
+4. notifications (voir section notifications)
+
+5. model_metadata
+   ├── id                          # ID auto-généré
+   ├── version                     # Version du modèle
+   ├── date_entrainement           # Date dernier entraînement
+   ├── performance                 # Métriques performance
+   ├── nombre_tickets              # Nombre tickets utilisés
+   ├── categories                  # Catégories supportées
+   ├── parametres                  # Paramètres modèle
+   └── statut                      # Statut modèle
+
+🚀 API REST (FASTAPI)
+================================================================================
+
+ENDPOINTS PRINCIPAUX:
+
+1. Classification des tickets:
+   ├── POST /predict
+   │   ├── Input: {titre, description}
+   │   └── Output: {categorie, score_confidence, categories_possibles}
+
+2. Feedback utilisateur:
+   ├── POST /feedback
+   │   ├── Input: {ticket_id, categorie_correcte, feedback}
+   │   └── Output: {success, message}
+
+3. Réentraînement:
+   ├── POST /retrain
+   │   ├── Input: {} (optionnel)
+   │   └── Output: {success, performance, message}
+
+4. Informations modèle:
+   ├── GET /model-info
+   │   └── Output: {version, performance, categories, statut}
+
+5. Vérification santé:
+   ├── GET /health
+   │   └── Output: {status, timestamp, version}
+
+6. Catégories disponibles:
+   ├── GET /categories
+   │   └── Output: {categories: [...]}
+
+CONFIGURATION API:
+├── Host: 0.0.0.0
+├── Port: 8000
+├── Framework: FastAPI
+├── Serveur: Uvicorn
+└── Documentation: /docs (Swagger)
+
+📱 INTERFACE UTILISATEUR
+================================================================================
+
+PAGES PRINCIPALES:
+
+1. AUTH.HTML (Authentification):
+   ├── Connexion email/mot de passe
+   ├── Connexion Google
+   ├── Connexion par lien magique
+   ├── Inscription
+   └── Récupération mot de passe
+
+2. USER-DASHBOARD.HTML (Dashboard Utilisateur):
+   ├── Liste des tickets créés
+   ├── Création nouveau ticket
+   ├── Filtres et recherche
+   ├── Notifications en temps réel
+   ├── Profil utilisateur
+   └── Statistiques personnelles
+
+3. ADMIN-DASHBOARD.HTML (Dashboard Administrateur):
+   ├── Vue d'ensemble tous les tickets
+   ├── Statistiques globales
+   ├── Gestion des assignations
+   ├── Export des données
+   ├── Gestion des utilisateurs
+   ├── Monitoring IA
+   └── Notifications système
+
+4. LOADING.HTML (Page de chargement):
+   ├── Animation de chargement
+   ├── Messages d'état
+   └── Redirection automatique
+
+COMPOSANTS UI:
+├── Header avec navigation
+├── Sidebar (dashboard admin)
+├── Cards de tickets
+├── Formulaires de création
+├── Modales de confirmation
+├── Notifications dropdown
+├── Filtres et recherche
+└── Pagination
+
+STYLES CSS:
+├── Design responsive
+├── Thème moderne
+├── Animations fluides
+├── Couleurs cohérentes
+├── Typographie claire
+└── Accessibilité
+
+⚙️ CONFIGURATION ET DÉPLOIEMENT
+================================================================================
+
+CONFIGURATION FIREBASE:
+├── Project ID: asten-tickets
+├── API Key: AIzaSyAjZuld7cIh6uXyuiH83Xj6p3EeIVhilHE
+├── Auth Domain: asten-tickets.firebaseapp.com
+├── Storage Bucket: asten-tickets.firebasestorage.app
+├── Messaging Sender ID: 474907811866
+└── App ID: 1:474907811866:web:fd80fa99140ea320a1b1a3
+
+VARIABLES D'ENVIRONNEMENT:
+├── FIREBASE_CREDENTIALS_PATH      # Chemin credentials Firebase
+├── FIREBASE_PROJECT_ID            # ID projet Firebase
+├── API_HOST                       # Host API (0.0.0.0)
+├── API_PORT                       # Port API (8000)
+├── MODEL_PATH                     # Chemin modèle IA
+├── VECTORIZER_PATH                # Chemin vectoriseur
+├── ENCODER_PATH                   # Chemin encodeur
+└── MIN_CONFIDENCE_THRESHOLD       # Seuil confiance (0.6)
+
+DÉPENDANCES PYTHON:
+├── scikit-learn==1.3.0            # Machine Learning
+├── pandas==2.0.3                  # Manipulation données
+├── numpy==1.24.3                  # Calculs numériques
+├── transformers==4.33.2           # Modèles NLP
+├── torch==2.0.1                   # Deep Learning
+├── firebase-admin==6.2.0          # SDK Firebase Admin
+├── python-dotenv==1.0.0           # Variables environnement
+├── joblib==1.3.2                  # Sauvegarde modèles
+├── nltk==3.8.1                    # Traitement langage naturel
+├── textblob==0.17.1               # Analyse sentiment
+├── sentence-transformers==2.2.2   # Embeddings phrases
+├── fastapi==0.103.1               # Framework API
+├── uvicorn==0.23.2                # Serveur ASGI
+└── pydantic==2.3.0                # Validation données
+
+SCRIPT DE DÉMARRAGE:
+├── start_nlp.bat                  # Démarrage Windows
+├── Installation automatique dépendances
+├── Initialisation modèle
+└── Lancement serveur API
+
+🔧 MAINTENANCE ET MONITORING
+================================================================================
+
+LOGS ET MONITORING:
+├── nlp_system.log                 # Logs système IA
+├── Logs API FastAPI               # Logs serveur API
+├── Logs planificateur             # Logs entraînement
+├── Health Check API               # Vérification état
+└── Métriques performance          # Statistiques modèle
+
+TÂCHES AUTOMATIQUES:
+├── Réentraînement quotidien       # 2h du matin
+├── Réentraînement hebdomadaire    # Dimanche 2h
+├── Réentraînement basé données    # 10+ nouveaux tickets
+├── Sauvegarde modèles             # Après entraînement
+└── Nettoyage logs                 # Rotation automatique
+
+DIAGNOSTIC ET TESTS:
+├── test_system.py                 # Tests système complet
+├── diagnose_model.py              # Diagnostic modèle
+├── Tests de classification        # Exemples variés
+├── Tests de performance           # Métriques précision
+└── Tests d'intégration            # API + Frontend
+
+📈 ÉVOLUTIONS FUTURES
+================================================================================
+
+FONCTIONNALITÉS PRÉVUES:
+├── Interface d'administration IA
+├── Notifications par email
+├── Notifications push
+├── Chatbot intelligent
+├── Analytics avancées
+├── API mobile
+├── Intégration CRM
+├── Workflow automatisé
+├── Templates personnalisables
+└── Multi-langues
+
+OPTIMISATIONS TECHNIQUES:
+├── Cache Redis
+├── Base de données optimisée
+├── CDN pour assets
+├── Compression données
+├── Lazy loading
+├── Service Workers
+├── PWA (Progressive Web App)
+├── Microservices
+└── Containerisation Docker
+
+SÉCURITÉ AVANCÉE:
+├── 2FA (Authentification à 2 facteurs)
+├── Audit trail complet
+├── Chiffrement données sensibles
+├── Rate limiting API
+├── WAF (Web Application Firewall)
+└── Backup automatisé
+
+📊 MÉTRIQUES ET KPIs
+================================================================================
+
+MÉTRIQUES UTILISATEURS:
+├── Nombre de tickets créés
+├── Temps de résolution moyen
+├── Satisfaction utilisateur
+├── Taux de résolution
+├── Utilisation des notifications
+└── Engagement utilisateur
+
+MÉTRIQUES SYSTÈME:
+├── Performance API
+├── Précision classification IA
+├── Temps de réponse
+├── Disponibilité système
+├── Utilisation ressources
+└── Erreurs système
+
+MÉTRIQUES BUSINESS:
+├── Volume de tickets
+├── Répartition par catégorie
+├── Charge de travail équipe
+├── Efficacité assignations
+├── ROI système IA
+└── Coûts opérationnels
+
+================================================================================
+                    FIN DE L'ARCHITECTURE TECHNIQUE
+================================================================================
+
+Date de génération: 2024
+Version du projet: 1.0
+Statut: Production Ready
+Mainteneur: Équipe Asten-Tickets 
