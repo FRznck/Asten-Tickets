@@ -1,18 +1,24 @@
-# Fichiers de configuration sensibles
+# Firebase credentials
 js/firebase-config.js
 nlp_model/firebase-credentials.json
-nlp_model/.env
 
-# Dépendances et logs
-node_modules/
-nlp_model/logs/
-nlp_system.log
+# Environment files
+.env
+*.env
+
+# Logs
 *.log
+logs/
 
-# Fichiers de modèles et de données générés
-nlp_model/models/
-nlp_model/data/last_training.txt
+# Python
+__pycache__/
+*.pyc
+*.pyo
 
-# Fichiers système
+# IDE
+.vscode/
+.idea/
+
+# OS
 .DS_Store
 Thumbs.db
