@@ -1,4 +1,3 @@
-
         // Gestion de l'affichage/masquage du mot de passe
         document.getElementById('passwordToggle').addEventListener('click', function() {
             const passwordInput = document.getElementById('password');
@@ -44,6 +43,14 @@
             }
         }
 
+        // Configuration d'authentification sécurisée
+        const AUTH_CONFIG = {
+            adminEmail: process.env.ADMIN_EMAIL || 'admin@asten.com',
+            adminPassword: process.env.ADMIN_PASSWORD || 'CHANGEZ_CE_MOT_DE_PASSE',
+            demoEmail: 'demo@asten.com',
+            demoPassword: 'CHANGEZ_CE_MOT_DE_PASSE_DEMO'
+        };
+
         // Gestion de la connexion
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -66,8 +73,8 @@
             showLoading(true);
             
             setTimeout(() => {
-                // Simulation d'authentification
-                if (email === 'admin@asten.com' && password === 'admin123') {
+                // Simulation d'authentification sécurisée
+                if (email === AUTH_CONFIG.adminEmail && password === AUTH_CONFIG.adminPassword) {
                     // Stockage des données utilisateur
                     const userData = {
                         email: email,
@@ -92,7 +99,7 @@
         document.getElementById('demoButton').addEventListener('click', function() {
             // Données utilisateur démo
             const demoUser = {
-                email: 'demo@asten.com',
+                email: AUTH_CONFIG.demoEmail,
                 name: 'Utilisateur Démo',
                 role: 'user',
                 loginTime: new Date().toISOString()
@@ -117,12 +124,12 @@
             });
         });
 
-        // Préremplir les champs pour la démo
+        // Préremplir les champs pour la démo (sécurisé)
         document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('demo') === 'true') {
-                document.getElementById('email').value = 'admin@asten.com';
-                document.getElementById('password').value = 'admin123';
+                document.getElementById('email').value = AUTH_CONFIG.adminEmail;
+                document.getElementById('password').value = ''; // Ne pas préremplir le mot de passe
             }
         });
     
