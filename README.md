@@ -164,7 +164,7 @@ Le système classifie automatiquement les tickets dans 8 catégories :
 ### Installation Rapide ou consulter le fichier `INSTALLATION_RAPIDE.md`
 ```bash
 # 1. Cloner le projet
-git clone [à-venir]
+git clone [https://github.com/FRznck/Asten-Tickets]
 
 # 2. Installer les dépendances Python
 cd nlp_model

@@ -135,10 +135,7 @@ await notifierModificationStatut(ticketData, ancienStatut, newStatus, ticket.ema
 - Mise à jour instantanée du compteur
 - Animation de pulsation pour les nouvelles notifications
 
-### Gestion des priorités
-- Couleurs différentes selon la priorité
-- Tri automatique par priorité et date
-- Indicateurs visuels
+
 
 ### Navigation intelligente
 - Liens directs vers les tickets concernés
